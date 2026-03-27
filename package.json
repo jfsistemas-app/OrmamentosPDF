@@ -1,0 +1,27 @@
+{
+  "name": "orcafacil",
+  "version": "3.0.0",
+  "description": "OrçaFácil — Sistema de Orçamentos 100% Offline com SQLite Nativo",
+  "author": "JFSistemas — Josimar Ferreira Soares",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "setup": "npm install && npx cap sync"
+  },
+  "dependencies": {
+    "@capacitor/core": "^6.2.0",
+    "@capacitor/app": "^6.0.0",
+    "@capacitor/haptics": "^6.0.0",
+    "@capacitor/status-bar": "^6.0.0",
+    "@capacitor/splash-screen": "^6.0.0",
+    "@capacitor/filesystem": "^6.0.0",
+    "@capacitor/share": "^6.0.0",
+    "@capacitor-community/sqlite": "^6.0.2",
+    "@capacitor/android": "^6.2.0",
+    "jeep-sqlite": "^2.7.4"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^6.2.0",
+    "typescript": "^5.5.0"
+  }
+}
