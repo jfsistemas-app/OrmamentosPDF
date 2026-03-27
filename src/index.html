@@ -1,0 +1,1454 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
+<meta name="theme-color" content="#1a2740" media="(prefers-color-scheme: dark)"/>
+<meta name="theme-color" content="#f0f4f8" media="(prefers-color-scheme: light)"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="OrçaFácil"/>
+<meta name="description" content="Sistema de orçamentos profissionais"/>
+<title>OrçaFácil</title>
+<link rel="manifest" href="manifest.json"/>
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32x32.png"/>
+<link rel="icon" type="image/png" sizes="16x16" href="icons/favicon-16x16.png"/>
+<link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png"/>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@700;800&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/sql-wasm.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/imask/7.6.1/imask.min.js"></script>
+<style>
+:root{--bg:#0f1923;--bg2:#1a2740;--bg3:#223350;--ac:#2563eb;--ac2:#1d4ed8;--tx:#f0f4f8;--tx2:#7a99b8;--bd:#2d3f5a;--gr:#10b981;--rd:#ef4444;--wn:#f59e0b;--r:10px;--sbi:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:light){:root{--bg:#f0f4f8;--bg2:#ffffff;--bg3:#e8edf2;--ac:#2563eb;--ac2:#1d4ed8;--tx:#1a2740;--tx2:#4a6380;--bd:#cbd5e1;--gr:#059669;--rd:#dc2626;--wn:#d97706}}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow-x:hidden}
+body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--tx);font-size:15px;overscroll-behavior:none}
+header{background:var(--bg2);border-bottom:2px solid var(--ac);height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;position:sticky;top:0;z-index:90}
+.logo{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:1.5rem;letter-spacing:1px;color:var(--ac)}
+.logo b{color:var(--ac)}
+#fbs{display:flex;align-items:center;gap:5px;font-size:.72rem;color:var(--tx2)}
+.dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.dg{background:var(--gr)}.dr{background:var(--rd)}.dy{background:var(--wn);animation:bk 1s infinite}
+@keyframes bk{50%{opacity:.3}}
+nav{position:fixed;bottom:0;left:0;right:0;background:var(--bg2);border-top:1px solid var(--bd);display:flex;padding-bottom:var(--sbi);z-index:90}
+.nb{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 4px 11px;background:none;border:none;color:var(--tx2);font-family:'Barlow',sans-serif;font-size:.67rem;font-weight:500;cursor:pointer;transition:color .15s}
+.nb.on{color:var(--ac)}.nb svg{width:22px;height:22px}
+.pg{display:none;padding:14px 14px calc(100px + var(--sbi))}.pg.on{display:block}
+
+.sobre-logo{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:2.2rem;letter-spacing:1px;color:var(--ac);text-align:center;margin:24px 0 4px}
+.sobre-logo b{color:var(--ac)}.sobre-version{text-align:center;font-size:.75rem;color:var(--tx2);margin-bottom:24px}
+.sobre-card{background:var(--bg2);border:1px solid var(--bd);border-radius:var(--r);padding:20px;margin-bottom:12px;text-align:center}
+.sobre-card .sc-title{font-family:'Barlow Condensed',sans-serif;font-size:.65rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--tx2);margin-bottom:10px}
+.sobre-card .sc-name{font-size:1.05rem;font-weight:700;color:var(--tx);margin-bottom:4px}
+.sobre-card .sc-email{font-size:.85rem;color:var(--ac)}
+.sobre-copy{text-align:center;font-size:.72rem;color:var(--tx2);margin-top:20px;line-height:1.6}
+.sec{font-family:'Barlow Condensed',sans-serif;font-size:.68rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--tx2);margin:16px 0 8px}
+.card{background:var(--bg2);border:1px solid var(--bd);border-radius:var(--r);padding:14px;margin-bottom:10px}
+.ctop{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.cnm{font-weight:700;font-size:1rem}.csb{font-size:.78rem;color:var(--tx2);margin-top:2px}
+.bge{display:inline-block;padding:2px 9px;border-radius:99px;font-size:.68rem;font-weight:600}
+.bg{background:rgba(16,185,129,.15);color:#34d399}.bw{background:rgba(245,158,11,.15);color:#fbbf24}.br{background:rgba(239,68,68,.15);color:#f87171}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:11px 18px;border-radius:8px;font-family:'Barlow',sans-serif;font-size:.9rem;font-weight:600;cursor:pointer;border:none;transition:all .15s}
+.bp{background:var(--ac);color:#fff}.bp:active{background:var(--ac2)}
+.bo{background:transparent;border:1px solid var(--bd);color:var(--tx)}.bo:active{border-color:var(--ac);color:var(--ac)}
+.bd2{background:rgba(239,68,68,.12);color:#f87171;border:1px solid rgba(239,68,68,.25)}
+.bsm{padding:7px 12px;font-size:.78rem}.bfw{width:100%}
+.fab{position:fixed;bottom:calc(70px + var(--sbi));right:18px;width:52px;height:52px;border-radius:50%;background:var(--ac);color:#fff;border:none;font-size:1.7rem;cursor:pointer;box-shadow:0 4px 20px rgba(37,99,235,.5);display:flex;align-items:center;justify-content:center;transition:transform .15s;z-index:89}
+.fab:active{transform:scale(.93)}
+.fi{margin-bottom:11px}
+.fi label{display:block;font-size:.73rem;color:var(--tx2);margin-bottom:4px;font-weight:600;letter-spacing:.3px}
+.fi input,.fi select,.fi textarea{width:100%;background:var(--bg3);border:1px solid var(--bd);border-radius:8px;padding:10px 12px;color:var(--tx);font-family:'Barlow',sans-serif;font-size:.93rem;transition:border-color .15s;-webkit-appearance:none;appearance:none}
+.fi input:focus,.fi select:focus,.fi textarea:focus{outline:none;border-color:var(--ac)}
+.fi textarea{resize:vertical;min-height:72px}.fi select option{background:var(--bg3)}
+.ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:200;align-items:flex-end}.ov.on{display:flex}
+.md{background:var(--bg2);border-radius:20px 20px 0 0;padding:16px 16px calc(20px + var(--sbi));width:100%;max-height:93vh;overflow-y:auto;animation:su .22s ease}
+@keyframes su{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.mhd{width:36px;height:4px;background:var(--bd);border-radius:99px;margin:0 auto 14px}
+.mtt{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:1.2rem;margin-bottom:14px;letter-spacing:.5px}
+.ir{display:flex;gap:8px;align-items:center;background:var(--bg3);border:1px solid var(--bd);border-radius:8px;padding:9px 11px;margin-bottom:6px}
+.ir .id{flex:1;font-size:.88rem;line-height:1.3}.ir .ip{font-weight:700;color:var(--ac);white-space:nowrap;font-size:.88rem}
+.idl{background:none;border:none;color:#f87171;cursor:pointer;padding:4px;font-size:1rem;line-height:1}
+.tb{background:var(--bg3);border:1px solid var(--bd);border-radius:var(--r);padding:13px;margin:11px 0}
+.tr{display:flex;justify-content:space-between;align-items:center;font-size:.87rem;padding:3px 0;color:var(--tx2)}
+.tr.big{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:1.2rem;color:var(--tx);border-top:1px solid var(--bd);margin-top:8px;padding-top:9px}
+.tr.big .tv{color:var(--ac)}
+.tr input{width:90px;padding:4px 7px;font-size:.85rem;text-align:right;background:var(--bg2);border:1px solid var(--bd);border-radius:6px;color:var(--tx);font-family:'Barlow',sans-serif}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.sw{position:relative;margin-bottom:10px}
+.sw svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--tx2);pointer-events:none}
+.sw input{width:100%;background:var(--bg3);border:1px solid var(--bd);border-radius:8px;padding:10px 10px 10px 35px;color:var(--tx);font-family:'Barlow',sans-serif;font-size:.93rem}
+.sw input:focus{outline:none;border-color:var(--ac)}
+.lbu{display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--bg3);border:2px dashed var(--bd);border-radius:8px;color:var(--tx2);cursor:pointer;font-size:.85rem;width:100%;justify-content:center;transition:border-color .2s}
+.lbu:active{border-color:var(--ac);color:var(--ac)}
+input[type=file]{display:none}
+.epv{display:flex;align-items:center;gap:12px;background:var(--bg3);border-radius:10px;padding:12px;margin-bottom:14px}
+.epv .epi{width:48px;height:48px;border-radius:8px;background:var(--bg2);border:1px solid var(--bd);display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0}
+.ra{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+#toast{position:fixed;bottom:calc(80px + var(--sbi));left:50%;transform:translateX(-50%) translateY(10px);background:var(--bg3);border:1px solid var(--ac);color:var(--tx);padding:9px 20px;border-radius:99px;font-size:.82rem;font-weight:600;opacity:0;transition:all .25s;z-index:999;white-space:nowrap;pointer-events:none}
+#toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+.empty{text-align:center;padding:44px 20px;color:var(--tx2)}.ei{font-size:2.5rem;margin-bottom:8px}
+.empty h3{font-family:'Barlow Condensed',sans-serif;font-size:1.1rem;color:var(--tx);margin-bottom:5px}.empty p{font-size:.82rem}
+.oc{background:var(--bg2);border:1px solid var(--bd);border-radius:var(--r);padding:13px;margin-bottom:10px;cursor:pointer;transition:border-color .15s;-webkit-user-select:none;user-select:none}
+.oc:active{border-color:var(--ac)}.onum{font-size:.7rem;color:var(--tx2);font-family:'Barlow Condensed',sans-serif;letter-spacing:1px}
+.oval{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:1.15rem;color:var(--ac)}
+.bk-card{background:var(--bg2);border:1px solid var(--bd);border-radius:var(--r);padding:16px;margin-bottom:10px}
+.bk-card h3{font-family:'Barlow Condensed',sans-serif;font-size:1rem;margin-bottom:6px}
+.bk-card p{font-size:.8rem;color:var(--tx2);margin-bottom:10px}
+.pv{background:#fff;color:#000;border-radius:8px;overflow:hidden;font-family:Helvetica,Arial,sans-serif;font-size:10px;line-height:1.35;margin-bottom:4px}
+.pv-hdr{background:#fff;padding:10px 16px 6px;display:flex;align-items:flex-start;gap:10px;border-bottom:1px solid #ccc}
+.pv-hdr .ph-emp{flex:1;text-align:right}.pv-hdr .ph-emp .en{font-weight:800;font-size:13px;color:#000}
+.pv-hdr .ph-emp .es{font-size:7.5px;color:#333;margin-top:1px}.pv-hdr .ph-emp .ew{font-size:7.5px;color:#0050b5;margin-top:1px}
+.pv-orc{background:#fff;padding:5px 16px;display:flex;align-items:center;border-bottom:1px solid #ccc}
+.pv-orc .po-cell{flex:1;display:flex;align-items:center;gap:4px;font-size:8px;border-right:1px solid #ccc;padding-right:8px;margin-right:8px}
+.pv-orc .po-cell:last-child{border-right:none;padding-right:0;margin-right:0}
+.pv-orc .po-cell .pk{color:#333}.pv-orc .po-cell .pv2{font-weight:700;color:#cc0000}
+.pv-sec{padding:0}.pv-lbl{background:#ddd;text-align:center;font-weight:700;font-size:8px;padding:3px;letter-spacing:.5px;color:#000}
+.pv-row1{background:#fff;padding:4px 16px;display:flex;align-items:center;border-bottom:1px solid #eee}
+.pv-row1 .rk{font-weight:700;font-size:7px;color:#000;margin-right:4px;min-width:40px}.pv-row1 .rv{font-size:8px;color:#000}
+.pv-row2{background:#fff;display:flex;border-bottom:1px solid #eee}
+.pv-row2 .rc{flex:1;padding:4px 16px;border-right:1px solid #eee}.pv-row2 .rc:last-child{border-right:none}
+.pv-row2 .rc .rk{font-weight:700;font-size:7px;color:#000}.pv-row2 .rc .rv{font-size:8px;color:#000}
+.pv-tbl{width:100%;border-collapse:collapse}
+.pv-tbl th{background:#ddd;font-weight:700;font-size:7.5px;padding:4px 6px;border:1px solid #ccc;text-align:center;color:#000}
+.pv-tbl th:nth-child(2){text-align:left}
+.pv-tbl td{font-size:8px;padding:4px 6px;border:1px solid #eee;color:#000;background:#fff}
+.pv-tbl td:nth-child(1),.pv-tbl td:nth-child(3),.pv-tbl td:nth-child(4),.pv-tbl td:nth-child(5){text-align:center}
+.pv-tbl tr:nth-child(even) td{background:#f9f9f9}.pv-tbl .er td{background:#f7f7f7}
+.pv-tots{display:flex;border-top:1px solid #ccc}
+.pv-tot{flex:1;padding:5px 8px;border-right:1px solid #ccc;text-align:center}.pv-tot:last-child{border-right:none;background:#ddd}
+.pv-tot .tk{font-weight:700;font-size:7px;color:#555}.pv-tot .tv{font-weight:700;font-size:9px;color:#000;margin-top:2px}.pv-tot:last-child .tv{font-size:10px}
+.pv-fp{display:flex;border-top:1px solid #ccc}
+.pv-fp .fc{flex:1;padding:5px 16px;border-right:1px solid #ccc}.pv-fp .fc:last-child{border-right:none}
+.pv-fp .fk{font-weight:700;font-size:7px;color:#555;letter-spacing:.3px}.pv-fp .fv{font-size:8.5px;color:#000;margin-top:2px}.pv-fp .fx{font-size:7px;color:#555;margin-top:1px}
+.pv-mat-tbl{width:100%;border-collapse:collapse}
+.pv-mat-tbl th{background:#e8e8e8;font-weight:700;font-size:7.5px;padding:4px 8px;border:1px solid #ccc;text-align:left;color:#000}
+.pv-mat-tbl th:last-child{text-align:center;width:60px}
+.pv-mat-tbl td{font-size:8px;padding:4px 8px;border:1px solid #eee;color:#000;background:#fff}.pv-mat-tbl td:last-child{text-align:center}
+.pv-obs{padding:5px 16px;border-top:1px solid #ccc}.pv-obs .ok{font-weight:700;font-size:7px;color:#555;letter-spacing:.3px}.pv-obs .ov2{font-size:8.5px;color:#000;margin-top:2px}
+.pv-ass{padding:8px 16px 10px;border-top:1px solid #ccc;display:flex;justify-content:space-between;align-items:flex-end}
+.pv-ass .al{font-size:7.5px;color:#555}.pv-ass .ar{font-size:7.5px;color:#555;text-align:right}
+.pv-ass .an{font-weight:700;font-size:8px;color:#000;margin-top:3px}
+.pv-ass .aline{display:block;width:120px;border-bottom:1px solid #333;height:14px;margin-top:2px}
+::-webkit-scrollbar{width:3px}::-webkit-scrollbar-thumb{background:var(--bd);border-radius:99px}
+.stcards{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px}
+.stcard{background:var(--bg2);border:1.5px solid var(--bd);border-radius:12px;padding:10px 8px;text-align:center;cursor:pointer;transition:all .18s;-webkit-user-select:none;user-select:none}
+.stcard:active{transform:scale(.96)}
+.stcard.active-pend{border-color:var(--wn);background:rgba(245,158,11,.08)}
+.stcard.active-aprov{border-color:var(--gr);background:rgba(16,185,129,.08)}
+.stcard.active-exec{border-color:var(--ac);background:rgba(37,99,235,.08)}
+.stcard .sc-ico{font-size:1.1rem;margin-bottom:2px}
+.stcard .sc-lbl{font-size:.6rem;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--tx2)}
+.stcard .sc-qty{font-family:'Barlow Condensed',sans-serif;font-size:1.3rem;font-weight:800;line-height:1.1}
+.stcard .sc-sum{font-size:.65rem;color:var(--tx2);margin-top:1px;font-weight:600}
+.stcard-pend .sc-qty{color:var(--wn)}
+.stcard-aprov .sc-qty{color:var(--gr)}
+.stcard-exec .sc-qty{color:var(--ac)}
+.pw-modal{text-align:center;padding:8px 0}
+.pw-modal .pw-ico{font-size:2.8rem;margin-bottom:8px}
+.pw-modal h2{font-family:'Barlow Condensed',sans-serif;font-size:1.4rem;font-weight:800;margin-bottom:6px}
+.pw-modal p{font-size:.83rem;color:var(--tx2);margin-bottom:18px;line-height:1.5}
+.pw-opt{display:flex;flex-direction:column;gap:10px;margin-bottom:12px}
+.pw-btn-ad{background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;border:none;border-radius:12px;padding:14px 16px;font-family:'Barlow',sans-serif;font-size:.95rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:opacity .15s}
+.pw-btn-ad:active{opacity:.85}
+.pw-btn-prem{background:linear-gradient(135deg,var(--ac),var(--ac2));color:#fff;border:none;border-radius:12px;padding:14px 16px;font-family:'Barlow',sans-serif;font-size:.95rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:opacity .15s}
+.pw-btn-prem:active{opacity:.85}
+.pw-badge{background:rgba(37,99,235,.12);border:1px solid rgba(37,99,235,.25);border-radius:99px;padding:3px 10px;font-size:.7rem;color:var(--ac);margin-left:6px}
+.btn-share-pdf{background:linear-gradient(135deg,var(--ac),#7c3aed);color:#fff;border:none;border-radius:12px;padding:13px 20px;font-family:'Barlow',sans-serif;font-size:.95rem;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%;transition:opacity .15s;box-shadow:0 4px 16px rgba(37,99,235,.3)}
+.btn-share-pdf:active{opacity:.85}
+
+/* Backup Drive */
+.gdrive-status{display:flex;align-items:center;gap:8px;padding:10px;background:rgba(66,133,244,.08);border:1px solid rgba(66,133,244,.2);border-radius:8px;margin-bottom:10px;font-size:.82rem}
+.gdrive-status.connected{background:rgba(16,185,129,.08);border-color:rgba(16,185,129,.2)}
+.gdrive-status.error{background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.2)}
+
+
+/* PRINT */
+.print-footer{display:none}
+@media print{
+  @page{margin:10mm}
+  body{background:#fff !important;color:#000 !important}
+  header,nav,.cprt,.fab,#toast{display:none !important}
+  /* Mostrar somente o orçamento aberto (modal Ver Orçamento) */
+  .ov{display:none !important;position:static !important;inset:auto !important;background:none !important}
+  #mVer.ov{display:block !important}
+  #mVer .md{max-height:none !important;overflow:visible !important;animation:none !important;border-radius:0 !important;padding:0 !important;background:transparent !important}
+  #mVer .mhd{display:none !important}
+  /* Evitar cortes */
+  .pv{box-shadow:none !important;border-radius:0 !important;page-break-inside:avoid;margin-bottom:18mm !important}
+  .print-footer{display:block;position:fixed;left:0;right:0;bottom:6mm;text-align:center;font-size:9pt;color:#666}
+}
+
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">Orça<b>Fácil</b></div>
+  <div id="fbs"><div class="dot dy"></div><span>Carregando...</span></div>
+</header>
+
+<div id="pOrc" class="pg on">
+  <div class="sec">Orçamentos</div>
+  <div id="statusCards" class="stcards"></div>
+  <div class="sw">
+    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input type="text" id="srchOrc" placeholder="Buscar cliente ou nº..." oninput="rendOrc()"/>
+  </div>
+  <div id="listOrc"></div>
+</div>
+
+<div id="pCli" class="pg">
+  <div class="sec">Clientes</div>
+  <div class="sw">
+    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input type="text" id="srchCli" placeholder="Buscar cliente..." oninput="rendCli()"/>
+  </div>
+  <div id="listCli"></div>
+</div>
+
+<div id="pEmp" class="pg">
+  <div class="sec">Dados da Empresa</div>
+  <div class="card">
+    <div id="epv" class="epv">
+      <div class="epi">🏢</div>
+      <div><div class="cnm" id="epNm">Minha Empresa</div><div class="csb" id="epSb">Configure seus dados</div></div>
+    </div>
+    <div class="fi">
+      <label>Logo da empresa</label>
+      <label class="lbu" for="upLg">📷 Selecionar logo (PNG/JPG)</label>
+      <input type="file" id="upLg" accept="image/*" onchange="hLogo(event)"/>
+    </div>
+    <div class="g2">
+      <div class="fi"><label>Nome da empresa *</label><input id="eNm" type="text" placeholder="Nome da sua empresa"/></div>
+      <div class="fi"><label>CNPJ</label><input id="eDoc" type="text" placeholder="CNPJ da empresa"/></div>
+    </div>
+    <div class="fi"><label>Endereço</label><input id="eEnd" type="text" placeholder="Rua, número, complemento, Cidade - UF"/></div>
+    <div class="g2">
+      <div class="fi"><label>CEP</label><input id="eCep" type="text" placeholder="CEP da empresa"/></div>
+      <div class="fi"><label>Telefone</label><input id="eTel" type="text" placeholder="Telefone da empresa"/></div>
+    </div>
+    <div class="g2">
+      <div class="fi"><label>E-mail</label><input id="eEmail" type="email" placeholder="E-mail da empresa"/></div>
+      <div class="fi"><label>Website</label><input id="eSite" type="text" placeholder="Site da empresa"/></div>
+    </div>
+    <div class="fi"><label>Responsável (assina orçamento)</label><input id="eResp" type="text" placeholder="Nome do responsável"/></div>
+    <button class="btn bp bfw" onclick="saveEmp()">💾 Salvar dados da empresa</button>
+  </div>
+  <div id="gdrive-section"></div>
+  <div class="sec" style="margin-top:20px">Backup Manual (Download)</div>
+  <div class="bk-card">
+    <h3>📤 Exportar backup</h3>
+    <p>Salva todos os dados (orçamentos, clientes e empresa) em um arquivo .json no dispositivo.</p>
+    <button class="btn bp bfw" onclick="exportBackup()">📤 Baixar backup</button>
+  </div>
+  <div class="bk-card">
+    <h3>📥 Importar backup</h3>
+    <p>Restaura seus dados a partir de um arquivo de backup exportado anteriormente.</p>
+    <label class="btn bo bfw" for="upBackup" style="cursor:pointer;display:flex">📥 Selecionar arquivo de backup</label>
+    <input type="file" id="upBackup" accept=".json" onchange="importBackup(event)"/>
+  </div>
+</div>
+
+<div id="pSob" class="pg">
+  <div style="text-align:center;padding:32px 0 20px">
+    <div class="sobre-logo">Orça<b>Fácil</b></div>
+    <div class="sobre-version" style="margin-bottom:0">Versão 3.0</div>
+  </div>
+
+  <!-- Desenvolvedor -->
+  <div class="sobre-card" style="text-align:center">
+    <div class="sc-title">Desenvolvedor</div>
+    <div class="sc-name" style="font-size:1.2rem">Josimar Ferreira Soares</div>
+    <div style="margin-top:4px;font-size:.8rem;color:var(--tx2)">Soluções em Tecnologia</div>
+    <a href="mailto:josimar.mbss@gmail.com" style="display:inline-flex;align-items:center;gap:6px;margin-top:14px;background:rgba(37,99,235,.1);border:1px solid rgba(37,99,235,.25);border-radius:99px;padding:8px 18px;font-size:.82rem;color:var(--ac);text-decoration:none;font-weight:600">
+      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+      josimar.mbss@gmail.com
+    </a>
+    <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--bd);font-size:.75rem;color:var(--tx2)">
+      Desenvolvido por Josimar Ferreira Soares &copy; 2026
+    </div>
+  </div>
+
+  <!-- Política de Privacidade -->
+  <div class="sobre-card" style="text-align:left">
+    <div class="sc-title" style="text-align:center;margin-bottom:14px">Política de Privacidade</div>
+    <div style="font-size:.82rem;color:var(--tx2);line-height:1.7;display:flex;flex-direction:column;gap:10px">
+      <div>
+        <span style="font-weight:700;color:var(--tx)">Dados armazenados</span><br>
+        O OrçaFácil armazena seus dados (orçamentos, clientes e dados da empresa) <strong style="color:var(--tx)">exclusivamente no seu dispositivo</strong>, utilizando SQLite local. Nenhuma informação é enviada a servidores externos.
+      </div>
+      <div>
+        <span style="font-weight:700;color:var(--tx)">Sem coleta de dados pessoais</span><br>
+        Não coletamos, acessamos nem compartilhamos dados pessoais dos usuários. Todas as informações inseridas no app ficam somente no seu celular.
+      </div>
+      <div>
+        <span style="font-weight:700;color:var(--tx)">Anúncios</span><br>
+        Na versão gratuita, exibimos vídeos de anúncios (rewarded ads) via AdMob. O Google pode coletar dados de uso conforme sua própria política de privacidade.
+      </div>
+      <div>
+        <span style="font-weight:700;color:var(--tx)">Backup</span><br>
+        O recurso de backup exporta seus dados para um arquivo JSON salvo no seu próprio dispositivo. Você tem controle total sobre esse arquivo.
+      </div>
+      <div>
+        <span style="font-weight:700;color:var(--tx)">Contato</span><br>
+        Dúvidas ou solicitações: <a href="mailto:josimar.mbss@gmail.com" style="color:var(--ac);text-decoration:none">josimar.mbss@gmail.com</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<nav>
+  <button class="nb on" onclick="spg('pOrc',this)">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+    Orçamentos
+  </button>
+  <button class="nb" onclick="spg('pCli',this)">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    Clientes
+  </button>
+  <button class="nb" onclick="spg('pEmp',this)">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    Empresa
+  </button>
+  <button class="nb" onclick="spg('pSob',this)">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    Sobre
+  </button>
+</nav>
+<button class="fab" id="fabBtn" onclick="openOrc()">+</button>
+<div id="toast"></div>
+
+<!-- MODAL ORÇAMENTO -->
+<div class="ov" id="mOrc"><div class="md">
+  <div class="mhd"></div><div class="mtt" id="mOrcT">Novo Orçamento</div>
+  <div class="fi"><label>Cliente *</label><select id="oCli"><option value="">Selecionar cliente...</option></select></div>
+  <button class="btn bo bsm" onclick="openCli(true)" style="margin-bottom:13px">+ Novo cliente</button>
+  <div class="sec" style="margin-top:4px">Itens / Serviços</div><div id="oIL"></div>
+  <div class="card" style="padding:11px;margin-bottom:10px">
+    <div class="fi" style="margin-bottom:8px"><label>Descrição</label><input type="text" id="niD" placeholder="Descrição do produto ou serviço"/></div>
+    <div class="g2">
+      <div class="fi" style="margin:0"><label>Qtd</label><input type="number" id="niQ" value="1" min="1"/></div>
+      <div class="fi" style="margin:0"><label>Valor unit. R$</label><input type="number" id="niP" placeholder="0,00" step="0.01"/></div>
+    </div>
+    <button class="btn bp bsm bfw" style="margin-top:8px" onclick="addIt()">+ Adicionar material/serviço</button>
+  </div>
+  <div class="sec">Materiais necessários</div><div id="oML"></div>
+  <div class="card" style="padding:11px;margin-bottom:10px">
+    <div class="g2">
+      <div class="fi" style="margin:0"><label>Material</label><input type="text" id="nmD" placeholder="Nome do material"/></div>
+      <div class="fi" style="margin:0"><label>Qtd</label><input type="number" id="nmQ" value="1" min="1"/></div>
+    </div>
+    <button class="btn bo bsm bfw" style="margin-top:8px" onclick="addMat()">+ Adicionar material</button>
+  </div>
+  <div class="tb">
+    <div class="tr"><span>Subtotal</span><span id="tSub">R$ 0,00</span></div>
+    <div class="tr"><span>Desconto (R$)</span><input type="number" id="oDesc" value="0" min="0" step="0.01" oninput="calcT()"/></div>
+    <div class="tr"><span>Acréscimo (R$)</span><input type="number" id="oAcr" value="0" min="0" step="0.01" oninput="calcT()"/></div>
+    <div class="tr big"><span>TOTAL</span><span class="tv" id="tTot">R$ 0,00</span></div>
+  </div>
+  <div class="g2">
+    <div class="fi"><label>Forma de pagamento</label>
+      <select id="oPg"><option>Pix</option><option>À vista</option><option>Cartão de crédito</option><option>Cartão de débito</option><option>Boleto</option><option>Parcelado</option><option>Transferência</option><option>A combinar</option></select>
+    </div>
+    <div class="fi"><label>Dados do Pagamento</label><input type="text" id="oPix" placeholder="Chave Pix, banco..."/></div>
+  </div>
+  <div class="g2">
+    <div class="fi"><label>Prazo de entrega</label><input type="text" id="oPrz" placeholder="Ex: 5 dias úteis"/></div>
+    <div class="fi"><label>Válido até</label><input type="date" id="oVal"/></div>
+  </div>
+  <div class="fi"><label>Observações</label><textarea id="oObs" placeholder="Informações adicionais..."></textarea></div>
+  <div class="ra">
+    <button class="btn bo" onclick="cm('mOrc')" style="flex:0 0 auto">Cancelar</button>
+    <button class="btn bp" style="flex:1" onclick="saveOrc()">💾 Salvar orçamento</button>
+  </div>
+</div></div>
+
+<!-- MODAL CLIENTE -->
+<div class="ov" id="mCli"><div class="md">
+  <div class="mhd"></div><div class="mtt" id="mCliT">Novo Cliente</div>
+  <div class="fi"><label>Nome / Razão Social *</label><input type="text" id="cNm" placeholder="Nome do cliente"/></div>
+  <div class="g2">
+    <div class="fi"><label>CPF / CNPJ</label><input type="text" id="cDoc"/></div>
+    <div class="fi"><label>RG / IE</label><input type="text" id="cRg" placeholder="RG ou IE"/></div>
+  </div>
+  <div class="g2">
+    <div class="fi"><label>Telefone</label><input type="text" id="cTel"/></div>
+    <div class="fi"><label>E-mail</label><input type="email" id="cEm" placeholder="E-mail do cliente"/></div>
+  </div>
+  <div class="fi"><label>Endereço</label><input type="text" id="cEnd" placeholder="Rua, número, complemento"/></div>
+  <div class="g3">
+    <div class="fi"><label>Bairro</label><input type="text" id="cBr"/></div>
+    <div class="fi"><label>Cidade</label><input type="text" id="cCd"/></div>
+    <div class="fi"><label>UF</label><input type="text" id="cUf" maxlength="2"/></div>
+  </div>
+  <div class="fi"><label>CEP</label><input type="text" id="cCp"/></div>
+  <div class="ra">
+    <button class="btn bo" onclick="cm('mCli')" style="flex:0 0 auto">Cancelar</button>
+    <button class="btn bp" style="flex:1" onclick="saveCli()">💾 Salvar cliente</button>
+  </div>
+</div></div>
+
+<!-- MODAL VER ORÇAMENTO -->
+<div class="ov" id="mVer"><div class="md">
+  <div class="mhd"></div><div id="vCont"></div>
+  <div class="ra" style="flex-wrap:wrap;gap:8px;margin-top:10px">
+    <button class="btn bo bsm" onclick="cm('mVer')" style="flex:0 0 auto">Fechar</button>
+    <select id="vSt" onchange="chSt()" style="flex:1;padding:9px 10px;font-size:.82rem;border-radius:8px;background:var(--bg3);border:1px solid var(--bd);color:var(--tx);font-family:'Barlow',sans-serif">
+      <option value="pendente">⏳ Pendente</option><option value="aprovado">✅ Aprovado</option><option value="executado">🔨 Executado</option>
+    </select>
+    <button class="btn bo bsm" onclick="edOrc()" style="flex:0 0 auto">✏️ Editar</button>
+    <button class="btn bd2 bsm" onclick="dlOrc()" style="flex:0 0 auto">🗑️</button>
+    <button class="btn-share-pdf" onclick="shareOrcPDFPaywall()"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>Compartilhar PDF</button>
+  </div>
+</div></div>
+
+
+<!-- MODAL PAYWALL PDF -->
+<div class="ov" id="mPaywall"><div class="md">
+  <div class="mhd"></div>
+  <div class="pw-modal">
+    <div class="pw-ico">📄</div>
+    <h2>Exportar PDF</h2>
+    <p>Você já usou sua exportação gratuita de hoje.<br>Escolha uma opção para continuar:</p>
+    <div class="pw-opt">
+      <button class="pw-btn-ad" onclick="monWatchAd()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+        Assistir vídeo — grátis
+      </button>
+      <button class="pw-btn-prem" onclick="monBuyPremium()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        Remover anúncios — R$9,99
+        <span class="pw-badge">Vitalício</span>
+      </button>
+    </div>
+    <button class="btn bo bfw" onclick="cm('mPaywall')" style="margin-top:4px">Cancelar</button>
+  </div>
+</div></div>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+
+
+// ╔══════════════════════════════════════════════════════════════════╗
+// ║         BACKUP AUTOMÁTICO — OrçaFácil v2.1                      ║
+// ║  Estratégia dupla:                                               ║
+// ║  1. File System Access API — sobrescreve o mesmo arquivo         ║
+// ║     silenciosamente a cada save (Chrome/Edge/Android Chrome)     ║
+// ║  2. localStorage  — snapshot invisível como fallback e           ║
+// ║     auto-recovery ao abrir o app                                 ║
+// ╚══════════════════════════════════════════════════════════════════╝
+
+// ─── CONFIGURAÇÕES ────────────────────────────────────────────────
+const BK_LS_KEY  = 'orcafacil_ls_backup';   // chave localStorage
+const BK_LS_META = 'orcafacil_ls_meta';      // metadados do backup
+const BK_FILENAME = 'orcafacil_backup.json'; // nome fixo → sobrescreve
+const BK_IDB_STORE = 'config';               // store do IndexedDB
+const BK_IDB_KEY   = 'fileHandle';           // chave para FileHandle
+
+// Estado do módulo
+window._BK = {
+  fileHandle: null,       // FileSystemFileHandle (File System Access API)
+  fsSupported: typeof window.showSaveFilePicker === 'function',
+  autoEnabled: false      // true após o usuário configurar o arquivo
+};
+
+// ══════════════════════════════════════════════════════════════════
+//  UTILITÁRIO — monta o objeto de backup completo
+// ══════════════════════════════════════════════════════════════════
+function bkMontarDados() {
+  return {
+    versao: '2.1',
+    data: new Date().toISOString(),
+    empresa: window._E || {},
+    clientes: window._C || [],
+    orcamentos: window._O || []
+  };
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  CAMADA 1-A — File System Access API (silencioso, mesmo arquivo)
+//  Suporte: Chrome 86+, Edge 86+, Chrome Android 109+
+//  NÃO suporta: Firefox, Safari/iOS
+// ══════════════════════════════════════════════════════════════════
+
+/** Persiste o FileHandle no IndexedDB para sobreviver ao reload */
+async function bkSalvarHandle(handle) {
+  try {
+    await dbPut(BK_IDB_STORE, { chave: BK_IDB_KEY, handle });
+    window._BK.fileHandle = handle;
+    window._BK.autoEnabled = true;
+  } catch (e) {
+    console.warn('[BK] Não foi possível salvar o FileHandle:', e);
+  }
+}
+
+/** Recupera o FileHandle do IndexedDB */
+async function bkCarregarHandle() {
+  try {
+    const r = await dbGet(BK_IDB_STORE, BK_IDB_KEY);
+    if (r && r.handle) {
+      window._BK.fileHandle = r.handle;
+      window._BK.autoEnabled = true;
+      return r.handle;
+    }
+  } catch (e) {
+    console.warn('[BK] Erro ao carregar FileHandle:', e);
+  }
+  return null;
+}
+
+/** Verifica se ainda temos permissão de escrita no arquivo salvo */
+async function bkVerificarPermissao(handle) {
+  try {
+    const perm = await handle.queryPermission({ mode: 'readwrite' });
+    if (perm === 'granted') return true;
+    const req = await handle.requestPermission({ mode: 'readwrite' });
+    return req === 'granted';
+  } catch (e) {
+    return false;
+  }
+}
+
+/** 
+ * Abre o seletor de arquivo UMA VEZ e salva o handle.
+ * Depois disso, bkAutoSalvarArquivo() funciona sem diálogo.
+ */
+async function bkConfigurarArquivo() {
+  if (!window._BK.fsSupported) {
+    toast('⚠️ Seu navegador não suporta File System API');
+    updBkUI();
+    return;
+  }
+  try {
+    const handle = await window.showSaveFilePicker({
+      suggestedName: BK_FILENAME,
+      types: [{ description: 'Backup JSON', accept: { 'application/json': ['.json'] } }]
+    });
+    await bkSalvarHandle(handle);
+    // Fazer o primeiro backup imediatamente
+    await bkAutoSalvarArquivo(true);
+    updBkUI();
+    toast('✅ Arquivo de backup configurado! Backup automático ativo.');
+  } catch (e) {
+    if (e.name !== 'AbortError') {
+      console.error('[BK] Erro ao configurar arquivo:', e);
+      toast('❌ Erro ao configurar arquivo de backup');
+    }
+  }
+}
+
+/** Sobrescreve o arquivo configurado silenciosamente (sem diálogo) */
+async function bkAutoSalvarArquivo(showMsg = false) {
+  if (!window._BK.fileHandle) return false;
+  try {
+    const temPermissao = await bkVerificarPermissao(window._BK.fileHandle);
+    if (!temPermissao) {
+      // Permissão revogada — desativa o auto-backup por arquivo
+      console.warn('[BK] Permissão de escrita negada. Usando apenas localStorage.');
+      window._BK.autoEnabled = false;
+      updBkUI();
+      return false;
+    }
+    const dados = bkMontarDados();
+    const writable = await window._BK.fileHandle.createWritable();
+    await writable.write(JSON.stringify(dados, null, 2));
+    await writable.close();
+    // Atualizar metadados
+    localStorage.setItem(BK_LS_META + '_file', JSON.stringify({
+      data: dados.data,
+      orcamentos: dados.orcamentos.length,
+      clientes: dados.clientes.length,
+      nome: window._BK.fileHandle.name
+    }));
+    if (showMsg) toast('💾 Backup em arquivo salvo!');
+    updBkUI();
+    return true;
+  } catch (e) {
+    console.error('[BK] Erro ao sobrescrever arquivo:', e);
+    return false;
+  }
+}
+
+/** Remove a configuração do arquivo de backup automático */
+async function bkDesconfigurarArquivo() {
+  try { await dbDel(BK_IDB_STORE, BK_IDB_KEY); } catch(e){}
+  window._BK.fileHandle = null;
+  window._BK.autoEnabled = false;
+  localStorage.removeItem(BK_LS_META + '_file');
+  toast('🔌 Backup automático em arquivo desativado');
+  updBkUI();
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  CAMADA 1-B — Download manual com nome fixo (fallback universal)
+//  Funciona em qualquer browser, mas abre diálogo de download
+// ══════════════════════════════════════════════════════════════════
+
+/** Download manual como arquivo (sem auto-save) */
+async function exportBackup() {
+  const dados = bkMontarDados();
+  const blob = new Blob([JSON.stringify(dados, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = BK_FILENAME; // nome FIXO — sobrescreve o anterior na pasta de downloads
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('📥 Backup baixado!');
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  CAMADA 2 — localStorage (snapshot invisível, auto-recovery)
+// ══════════════════════════════════════════════════════════════════
+
+/** Salva snapshot no localStorage (chamado internamente após cada operação) */
+function bkSalvarLocal() {
+  try {
+    const dados = bkMontarDados();
+    try {
+      localStorage.setItem(BK_LS_KEY, JSON.stringify(dados));
+    } catch (q) {
+      // Quota exceeded — salva sem logo
+      const sem = JSON.parse(JSON.stringify(dados));
+      if (sem.empresa) sem.empresa.logo = null;
+      localStorage.setItem(BK_LS_KEY, JSON.stringify(sem));
+    }
+    localStorage.setItem(BK_LS_META, JSON.stringify({
+      data: dados.data,
+      orcamentos: dados.orcamentos.length,
+      clientes: dados.clientes.length
+    }));
+  } catch (e) {
+    console.warn('[BK] localStorage falhou:', e);
+  }
+}
+
+function bkLerLocal() {
+  try { return JSON.parse(localStorage.getItem(BK_LS_KEY)); } catch(e){ return null; }
+}
+function bkMetaLocal() {
+  try { return JSON.parse(localStorage.getItem(BK_LS_META)); } catch(e){ return null; }
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  AUTO-RECOVERY — detecta dados perdidos na inicialização
+// ══════════════════════════════════════════════════════════════════
+
+async function bkVerificarRecuperar(totalOrcs, totalClis) {
+  const lsBk = bkLerLocal();
+  // Se tem dados no IndexedDB → apenas garante backup atualizado
+  if (totalOrcs > 0 || totalClis > 0) {
+    bkSalvarLocal();
+    return;
+  }
+  // IndexedDB vazio — verifica backup local
+  if (lsBk && (lsBk.orcamentos?.length > 0 || lsBk.clientes?.length > 0)) {
+    const dt = new Date(lsBk.data).toLocaleString('pt-BR');
+    if (confirm(
+      `⚠️ DADOS RECUPERÁVEIS ENCONTRADOS!\n\n` +
+      `Backup local de: ${dt}\n` +
+      `📋 ${lsBk.orcamentos?.length || 0} orçamentos\n` +
+      `👤 ${lsBk.clientes?.length || 0} clientes\n\n` +
+      `Deseja restaurar automaticamente?`
+    )) {
+      await bkAplicar(lsBk, 'backup local');
+    }
+  }
+}
+
+/** Aplica um backup (de qualquer fonte) no IndexedDB e memória */
+async function bkAplicar(dados, fonte) {
+  if (!dados?.orcamentos || !dados?.clientes) {
+    toast('❌ Arquivo de backup inválido'); return;
+  }
+  for (const c of dados.clientes)   await dbPut('clientes', c);
+  for (const o of dados.orcamentos) await dbPut('orcamentos', o);
+  if (dados.empresa) {
+    const emp = { chave: 'empresa', ...dados.empresa };
+    await dbPut('config', emp);
+    window._E = emp;
+  }
+  window._C = dados.clientes.sort((a,b) => a.nome.localeCompare(b.nome));
+  window._O = dados.orcamentos.sort((a,b) => new Date(b.criadoEm) - new Date(a.criadoEm));
+  ldEmp(); rendOrc(); rendCli(); popSC();
+  bkSalvarLocal();
+  toast(`✅ ${dados.orcamentos.length} orçamentos restaurados do ${fonte}!`);
+}
+
+/** Importa backup a partir de arquivo selecionado pelo usuário */
+async function importBackup(e) {
+  const file = e.target.files[0]; if (!file) return;
+  if (!confirm('Isso vai substituir TODOS os dados atuais. Continuar?')) return;
+  const reader = new FileReader();
+  reader.onload = async ev => {
+    try {
+      const dados = JSON.parse(ev.target.result);
+      await bkAplicar(dados, 'arquivo importado');
+    } catch(err) {
+      toast('❌ Erro ao importar: arquivo inválido');
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  HOOK — executa backup após cada operação de escrita
+// ══════════════════════════════════════════════════════════════════
+
+function hookAutoSave() {
+  const wrap = (orig) => async function() {
+    const res = await orig.apply(this, arguments);
+    // 1. Backup localStorage (instantâneo)
+    bkSalvarLocal();
+    // 2. Backup em arquivo (silencioso, sem diálogo)
+    if (window._BK.autoEnabled && window._BK.fileHandle) {
+      bkAutoSalvarArquivo(false).then(ok => {
+        if (ok) console.log('[BK] Arquivo atualizado silenciosamente');
+      });
+    }
+    return res;
+  };
+  window.saveOrc = wrap(window.saveOrc);
+  window.saveCli = wrap(window.saveCli);
+  window.saveEmp = wrap(window.saveEmp);
+  window.dlOrc   = wrap(window.dlOrc);
+  window.dlCli   = wrap(window.dlCli);
+  window.chSt    = wrap(window.chSt);
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  UI — Painel de Backup na aba Empresa
+// ══════════════════════════════════════════════════════════════════
+
+function updBkUI() {
+  const el = document.getElementById('bk-auto-status'); if (!el) return;
+  const metaFile = (() => { try { return JSON.parse(localStorage.getItem(BK_LS_META + '_file')); } catch(e){ return null; } })();
+  const metaLocal = bkMetaLocal();
+  const ativo = window._BK.autoEnabled && window._BK.fileHandle;
+  const fsOk   = window._BK.fsSupported;
+
+  el.innerHTML = ativo
+    ? `<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+         <span style="font-size:1.1rem">🟢</span>
+         <span style="font-weight:700;color:var(--gr);font-size:.9rem">Backup automático ATIVO</span>
+       </div>
+       <div style="font-size:.78rem;color:var(--tx2);margin-bottom:10px;line-height:1.6">
+         📁 Arquivo: <b style="color:var(--tx)">${metaFile?.nome || BK_FILENAME}</b><br>
+         🕐 Último backup: <b>${metaFile ? new Date(metaFile.data).toLocaleString('pt-BR') : '—'}</b><br>
+         📋 ${metaFile?.orcamentos || 0} orçamentos · 👤 ${metaFile?.clientes || 0} clientes
+       </div>
+       <div style="display:flex;gap:8px;flex-wrap:wrap">
+         <button class="btn bp bsm" style="flex:1" onclick="bkAutoSalvarArquivo(true)">💾 Salvar agora</button>
+         <button class="btn bd2 bsm" style="flex:0 0 auto" onclick="bkDesconfigurarArquivo()">🗑️ Remover</button>
+       </div>`
+    : `<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+         <span style="font-size:1.1rem">${fsOk ? '🟡' : '⚫'}</span>
+         <span style="font-weight:700;font-size:.9rem">${fsOk ? 'Backup automático inativo' : 'File System API não suportada'}</span>
+       </div>
+       <div style="font-size:.78rem;color:var(--tx2);margin-bottom:10px;line-height:1.6">
+         ${fsOk
+           ? '🔧 Configure um arquivo de destino. A cada salvamento, o app sobrescreverá o arquivo <b>silenciosamente</b>, sem precisar de novos cliques.<br><br>💾 Backup local: <b>' + (metaLocal ? new Date(metaLocal.data).toLocaleString('pt-BR') : 'nenhum') + '</b> (recuperação automática em caso de falha)'
+           : '⚠️ Use o Chrome ou Edge para ativar o backup automático em arquivo.<br><br>Use os botões abaixo para backup manual.'
+         }
+       </div>
+       ${fsOk ? `<button class="btn bp bfw" onclick="bkConfigurarArquivo()">📁 Configurar arquivo de backup automático</button>` : ''}`;
+}
+
+function renderDrivePanel() {
+  const container = document.getElementById('gdrive-section'); if (!container) return;
+  container.innerHTML = `
+    <div class="sec" style="margin-top:20px">💾 Backup Automático em Arquivo</div>
+    <div class="bk-card">
+      <p style="font-size:.8rem;color:var(--tx2);margin-bottom:10px">
+        Selecione um arquivo de destino uma única vez. Após isso, cada salvamento de orçamento ou cliente sobrescreverá o arquivo automaticamente — sem diálogos, sem cliques extras.
+      </p>
+      <div id="bk-auto-status"></div>
+    </div>`;
+  updBkUI();
+}
+
+
+
+// ═══════════════════════════════════
+// SQLite — dados no filesystem nativo
+// ═══════════════════════════════════
+const DB_NAME='orcafacil',DB_VER=1;let db;
+const isNative = typeof Capacitor !== 'undefined' && Capacitor.isNativePlatform && Capacitor.isNativePlatform();
+
+// ── sql.js (web fallback) ──
+const SQLITE_IDB='orcafacil_sqlite';let _sqlDB=null;
+function _openIDB(){return new Promise((ok,err)=>{const r=indexedDB.open(SQLITE_IDB,1);r.onupgradeneeded=e=>{if(!e.target.result.objectStoreNames.contains('db'))e.target.result.createObjectStore('db');};r.onsuccess=e=>ok(e.target.result);r.onerror=e=>err(e.target.error);});}
+async function _loadBytes(){const i=await _openIDB();return new Promise((ok,err)=>{const r=i.transaction('db','readonly').objectStore('db').get('main');r.onsuccess=()=>ok(r.result||null);r.onerror=()=>err(r.error);});}
+async function _persist(){if(!_sqlDB)return;const d=_sqlDB.export();const i=await _openIDB();return new Promise((ok,err)=>{const t=i.transaction('db','readwrite');t.objectStore('db').put(d,'main');t.oncomplete=()=>ok();t.onerror=()=>err(t.error);});}
+let _pTimer;function _schPersist(){clearTimeout(_pTimer);_pTimer=setTimeout(()=>_persist(),300);}
+
+async function abrirDB(){
+  const createSQL=`
+    CREATE TABLE IF NOT EXISTS orcamentos(id TEXT PRIMARY KEY, data TEXT);
+    CREATE TABLE IF NOT EXISTS clientes(id TEXT PRIMARY KEY, data TEXT);
+    CREATE TABLE IF NOT EXISTS config(chave TEXT PRIMARY KEY, data TEXT);
+  `;
+  if(isNative){
+    const sqlite=Capacitor.Plugins.CapacitorSQLite;
+    await sqlite.createConnection({database:DB_NAME,encrypted:false,mode:'no-encryption',version:1,readOnly:false});
+    await sqlite.open({database:DB_NAME});
+    for(const s of createSQL.split(';').filter(s=>s.trim()))await sqlite.run({database:DB_NAME,statement:s.trim(),values:[]});
+    console.log('[SQLite-Nativo] Banco aberto no filesystem');
+  } else {
+    const SQL=await initSqlJs({locateFile:f=>`https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/${f}`});
+    const bytes=await _loadBytes();
+    _sqlDB=bytes?new SQL.Database(bytes):new SQL.Database();
+    for(const s of createSQL.split(';').filter(s=>s.trim()))_sqlDB.run(s.trim());
+    await _persist();
+    console.log('[SQLite-Web] Banco WASM carregado');
+  }
+  // Migra IndexedDB antigo se existir
+  await _migrateOldIDB();
+  db=true;
+}
+
+function dbGetAll(store){
+  if(isNative){
+    return Capacitor.Plugins.CapacitorSQLite.query({database:DB_NAME,statement:`SELECT data FROM ${store}`,values:[]}).then(r=>(r.values||[]).map(v=>JSON.parse(v.data)));
+  }
+  const rows=_sqlDB.exec(`SELECT data FROM ${store}`);
+  if(!rows.length)return Promise.resolve([]);
+  return Promise.resolve(rows[0].values.map(r=>JSON.parse(r[0])));
+}
+
+function dbPut(store,obj){
+  const key=store==='config'?obj.chave:obj.id;
+  const json=JSON.stringify(obj);
+  if(isNative){
+    return Capacitor.Plugins.CapacitorSQLite.run({database:DB_NAME,statement:`INSERT OR REPLACE INTO ${store}(${store==='config'?'chave':'id'},data) VALUES(?,?)`,values:[key,json]});
+  }
+  _sqlDB.run(`INSERT OR REPLACE INTO ${store}(${store==='config'?'chave':'id'},data) VALUES(?,?)`, [key,json]);
+  _schPersist();
+  return Promise.resolve();
+}
+
+function dbDel(store,id){
+  const col=store==='config'?'chave':'id';
+  if(isNative){
+    return Capacitor.Plugins.CapacitorSQLite.run({database:DB_NAME,statement:`DELETE FROM ${store} WHERE ${col}=?`,values:[id]});
+  }
+  _sqlDB.run(`DELETE FROM ${store} WHERE ${col}=?`, [id]);
+  _schPersist();
+  return Promise.resolve();
+}
+
+function dbGet(store,key){
+  const col=store==='config'?'chave':'id';
+  if(isNative){
+    return Capacitor.Plugins.CapacitorSQLite.query({database:DB_NAME,statement:`SELECT data FROM ${store} WHERE ${col}=?`,values:[key]}).then(r=>r.values&&r.values.length?JSON.parse(r.values[0].data):null);
+  }
+  const rows=_sqlDB.exec(`SELECT data FROM ${store} WHERE ${col}=?`, [key]);
+  if(!rows.length||!rows[0].values.length)return Promise.resolve(null);
+  return Promise.resolve(JSON.parse(rows[0].values[0][0]));
+}
+
+// Migra dados do IndexedDB antigo para SQLite (primeira execução)
+async function _migrateOldIDB(){
+  try{
+    const req=indexedDB.open('orcafacil',1);
+    const oldDB=await new Promise((ok,err)=>{req.onsuccess=e=>ok(e.target.result);req.onerror=()=>ok(null);req.onupgradeneeded=()=>ok(null);});
+    if(!oldDB||!oldDB.objectStoreNames.contains('orcamentos'))return;
+    const getAll=(s)=>new Promise((ok,err)=>{try{const r=oldDB.transaction(s,'readonly').objectStore(s).getAll();r.onsuccess=()=>ok(r.result||[]);r.onerror=()=>ok([]);}catch(e){ok([]);}});
+    const orcs=await getAll('orcamentos');
+    const clis=await getAll('clientes');
+    const emp=await new Promise((ok)=>{try{const r=oldDB.transaction('config','readonly').objectStore('config').get('empresa');r.onsuccess=()=>ok(r.result);r.onerror=()=>ok(null);}catch(e){ok(null);}});
+    if(orcs.length===0&&clis.length===0)return;
+    for(const o of orcs)await dbPut('orcamentos',o);
+    for(const c of clis)await dbPut('clientes',c);
+    if(emp)await dbPut('config',emp);
+    console.log(`[SQLite] Migrados ${orcs.length} orçamentos, ${clis.length} clientes do IndexedDB antigo`);
+    oldDB.close();
+  }catch(e){console.warn('[SQLite] Migração:', e);}
+}
+window._O=[];window._C=[];window._E={};window._I=[];window._M=[];
+window._eOid=null;window._eCid=null;window._vid=null;window._bkOrc=false;
+window._filterSt=null;
+const G=id=>document.getElementById(id);
+const fmtR=v=>'R$ '+parseFloat(v||0).toFixed(2).replace('.',',');
+const toast=msg=>{const t=G('toast');t.textContent=msg;t.classList.add('on');setTimeout(()=>t.classList.remove('on'),2600);};
+
+function apMasks(){
+  if(G('eCep'))IMask(G('eCep'),{mask:'00000-000'});
+  if(G('eTel'))IMask(G('eTel'),{mask:[{mask:'(00) 0000-0000'},{mask:'(00) 00000-0000'}]});
+  if(G('cDoc'))IMask(G('cDoc'),{mask:[{mask:'000.000.000-00'},{mask:'00.000.000/0000-00'}]});
+  if(G('cTel'))IMask(G('cTel'),{mask:[{mask:'(00) 0000-0000'},{mask:'(00) 00000-0000'}]});
+  if(G('cCp'))IMask(G('cCp'),{mask:'00000-000'});
+  if(G('eDoc'))IMask(G('eDoc'),{mask:'00.000.000/0000-00'});
+}
+
+function spg(id,btn){document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));document.querySelectorAll('.nb').forEach(b=>b.classList.remove('on'));G(id).classList.add('on');btn.classList.add('on');const f=G('fabBtn');if(id==='pOrc'){f.style.display='';f.textContent='+';f.onclick=openOrc;}else if(id==='pCli'){f.style.display='';f.textContent='+';f.onclick=()=>openCli(false);}else{f.style.display='none';}}
+function cm(id){G(id).classList.remove('on')}
+
+function ldEmp(){const e=window._E;if(!e.nome)return;G('eNm').value=e.nome||'';G('eDoc').value=e.doc||'';G('eEnd').value=e.end||'';G('eCep').value=e.cep||'';G('eTel').value=e.tel||'';G('eEmail').value=e.email||'';G('eSite').value=e.site||'';G('eResp').value=e.resp||'';G('epNm').textContent=e.nome;G('epSb').textContent=e.tel||e.email||'Configure';if(e.logo){G('epv').innerHTML=`<img src="${e.logo}" style="width:48px;height:48px;border-radius:8px;object-fit:contain;flex-shrink:0"/><div><div class="cnm">${e.nome}</div><div class="csb">${e.tel||''}</div></div>`;}}
+
+function hLogo(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=async ev=>{window._E.logo=ev.target.result;await dbPut('config',{chave:'empresa',...window._E});ldEmp();toast('Logo carregado!');};r.readAsDataURL(f);}
+
+async function saveEmp(){const e={chave:'empresa',nome:G('eNm').value.trim(),doc:G('eDoc').value.trim(),end:G('eEnd').value.trim(),cep:G('eCep').value.trim(),tel:G('eTel').value.trim(),email:G('eEmail').value.trim(),site:G('eSite').value.trim(),resp:G('eResp').value.trim(),logo:window._E.logo||null};if(!e.nome){toast('⚠️ Informe o nome da empresa');return;}await dbPut('config',e);window._E=e;ldEmp();toast('✅ Dados da empresa salvos!');}
+
+function openCli(bkOrc){window._bkOrc=bkOrc;window._eCid=null;G('mCliT').textContent='Novo Cliente';['cNm','cDoc','cRg','cTel','cEm','cEnd','cBr','cCd','cUf','cCp'].forEach(i=>{if(G(i))G(i).value='';});G('mCli').classList.add('on');setTimeout(()=>apMasks(),100);}
+function edCli(id){const c=window._C.find(x=>x.id===id);if(!c)return;window._eCid=id;G('mCliT').textContent='Editar Cliente';G('cNm').value=c.nome||'';G('cDoc').value=c.doc||'';G('cRg').value=c.rg||'';G('cTel').value=c.tel||'';G('cEm').value=c.email||'';G('cEnd').value=c.end||'';G('cBr').value=c.bairro||'';G('cCd').value=c.cidade||'';G('cUf').value=c.uf||'';G('cCp').value=c.cep||'';G('mCli').classList.add('on');setTimeout(()=>apMasks(),100);}
+async function saveCli(){const nome=G('cNm').value.trim();if(!nome){toast('⚠️ Informe o nome');return;}const c={nome,doc:G('cDoc').value.trim(),rg:G('cRg').value.trim(),tel:G('cTel').value.trim(),email:G('cEm').value.trim(),end:G('cEnd').value.trim(),bairro:G('cBr').value.trim(),cidade:G('cCd').value.trim(),uf:G('cUf').value.trim().toUpperCase(),cep:G('cCp').value.trim(),criadoEm:new Date().toISOString()};if(window._eCid){c.id=window._eCid;window._C[window._C.findIndex(x=>x.id===window._eCid)]=c;}else{c.id='c'+Date.now();window._C.push(c);}await dbPut('clientes',c);rendCli();popSC();cm('mCli');toast('✅ Cliente salvo!');if(window._bkOrc)setTimeout(()=>{G('oCli').value=c.id;},80);}
+async function dlCli(id){if(!confirm('Excluir cliente?'))return;window._C=window._C.filter(c=>c.id!==id);await dbDel('clientes',id);rendCli();popSC();toast('🗑️ Cliente excluído');}
+function rendCli(){const q=(G('srchCli')?.value||'').toLowerCase();const l=window._C.filter(c=>c.nome.toLowerCase().includes(q));const el=G('listCli');if(!l.length){el.innerHTML=`<div class="empty"><div class="ei">👤</div><h3>Nenhum cliente</h3><p>Adicione seu primeiro cliente</p></div>`;return;}el.innerHTML=l.map(c=>`<div class="card"><div class="ctop"><div><div class="cnm">${c.nome}</div><div class="csb">${[c.tel,c.email].filter(Boolean).join(' · ')||'Sem contato'}</div>${c.cidade?`<div class="csb">📍 ${c.cidade}${c.uf?' - '+c.uf:''}</div>`:''}</div><div style="display:flex;gap:6px"><button class="btn bo bsm" onclick="edCli('${c.id}')">✏️</button><button class="btn bd2 bsm" onclick="dlCli('${c.id}')">🗑️</button></div></div></div>`).join('');}
+function popSC(){const s=G('oCli'),cur=s.value;s.innerHTML='<option value="">Selecionar cliente...</option>'+window._C.map(c=>`<option value="${c.id}">${c.nome}</option>`).join('');if(cur)s.value=cur;}
+
+function openOrc(){window._eOid=null;window._I=[];window._M=[];G('mOrcT').textContent='Novo Orçamento';G('oCli').value='';G('oDesc').value='0';G('oAcr').value='0';G('oPg').value='Pix';G('oPix').value='';G('oPrz').value='';G('oObs').value='';const d=new Date();d.setDate(d.getDate()+30);G('oVal').value=d.toISOString().split('T')[0];rndI();rndM();calcT();G('mOrc').classList.add('on');}
+function addIt(){const desc=G('niD').value.trim(),qtd=parseFloat(G('niQ').value)||1,preco=parseFloat(G('niP').value)||0;if(!desc){toast('⚠️ Informe a descrição');return;}window._I.push({desc,qtd,preco,total:qtd*preco});G('niD').value='';G('niQ').value='1';G('niP').value='';rndI();calcT();}
+function rmIt(i){window._I.splice(i,1);rndI();calcT();}
+function rndI(){const el=G('oIL');if(!window._I.length){el.innerHTML='<div style="color:var(--tx2);font-size:.82rem;padding:2px 0 7px">Nenhum item</div>';return;}el.innerHTML=window._I.map((it,i)=>`<div class="ir"><div class="id">${it.desc}<br><small style="color:var(--tx2)">${it.qtd}x ${fmtR(it.preco)}</small></div><div class="ip">${fmtR(it.total)}</div><button class="idl" onclick="rmIt(${i})">✕</button></div>`).join('');}
+function addMat(){const desc=G('nmD').value.trim(),qtd=G('nmQ').value||'1';if(!desc){toast('⚠️ Informe o material');return;}window._M.push({desc,qtd});G('nmD').value='';G('nmQ').value='1';rndM();}
+function rmMat(i){window._M.splice(i,1);rndM();}
+function rndM(){const el=G('oML');if(!window._M.length){el.innerHTML='<div style="color:var(--tx2);font-size:.82rem;padding:2px 0 7px">Nenhum material</div>';return;}el.innerHTML=window._M.map((m,i)=>`<div class="ir"><div class="id">${m.desc}</div><div class="ip" style="color:var(--tx2)">${m.qtd}</div><button class="idl" onclick="rmMat(${i})">✕</button></div>`).join('');}
+function calcT(){const sub=window._I.reduce((s,it)=>s+it.total,0);const desc=parseFloat(G('oDesc').value)||0,acr=parseFloat(G('oAcr').value)||0;G('tSub').textContent=fmtR(sub);G('tTot').textContent=fmtR(sub-desc+acr);}
+async function saveOrc(){const cliId=G('oCli').value;if(!cliId){toast('⚠️ Selecione o cliente');return;}if(!window._I.length){toast('⚠️ Adicione ao menos 1 item');return;}const sub=window._I.reduce((s,it)=>s+it.total,0);const desc=parseFloat(G('oDesc').value)||0,acr=parseFloat(G('oAcr').value)||0;const cli=window._C.find(c=>c.id===cliId)||{};const num=window._eOid?(window._O.find(o=>o.id===window._eOid)?.numero||gnNum()):gnNum();const orc={clienteId:cliId,clienteNome:cli.nome||'',numero:num,items:[...window._I],materiais:[...window._M],subtotal:sub,desconto:desc,acrescimo:acr,total:sub-desc+acr,pagamento:G('oPg').value,chavePix:G('oPix').value.trim(),prazo:G('oPrz').value.trim(),validade:G('oVal').value,obs:G('oObs').value.trim(),status:'pendente',criadoEm:new Date().toISOString()};if(window._eOid){orc.id=window._eOid;window._O[window._O.findIndex(o=>o.id===window._eOid)]=orc;}else{orc.id='o'+Date.now();window._O.unshift(orc);}await dbPut('orcamentos',orc);cm('mOrc');rendOrc();toast('✅ Orçamento salvo!');}
+function gnNum(){const mx=window._O.reduce((m,o)=>{const n=parseInt((o.numero||'').replace(/\D/g,''))||0;return Math.max(m,n);},0);return 'ORC-'+String(mx+1).padStart(4,'0');}
+function filterSt(st){window._filterSt=(window._filterSt===st?null:st);rendOrc();}
+function rendOrc(){
+  const q=(G('srchOrc')?.value||'').toLowerCase();
+  const all=window._O.filter(o=>o.clienteNome.toLowerCase().includes(q)||(o.numero||'').toLowerCase().includes(q));
+  // ── Cards de status ────────────────────────────────
+  const sc=G('statusCards');
+  if(sc){
+    const ct=(st)=>all.filter(o=>o.status===st);
+    const sm=(st)=>ct(st).reduce((s,o)=>s+(o.total||0),0);
+    const pq=ct('pendente').length,aq=ct('aprovado').length,eq=ct('executado').length;
+    const fp=window._filterSt;
+    sc.innerHTML=`
+      <div class="stcard stcard-pend${fp==='pendente'?' active-pend':''}" onclick="filterSt('pendente')">
+        <div class="sc-ico">⏳</div>
+        <div class="sc-lbl">Pendentes</div>
+        <div class="sc-qty">${pq}</div>
+        <div class="sc-sum">${fmtR(sm('pendente'))}</div>
+      </div>
+      <div class="stcard stcard-aprov${fp==='aprovado'?' active-aprov':''}" onclick="filterSt('aprovado')">
+        <div class="sc-ico">✅</div>
+        <div class="sc-lbl">Aprovados</div>
+        <div class="sc-qty">${aq}</div>
+        <div class="sc-sum">${fmtR(sm('aprovado'))}</div>
+      </div>
+      <div class="stcard stcard-exec${fp==='executado'?' active-exec':''}" onclick="filterSt('executado')">
+        <div class="sc-ico">🔨</div>
+        <div class="sc-lbl">Executados</div>
+        <div class="sc-qty">${eq}</div>
+        <div class="sc-sum">${fmtR(sm('executado'))}</div>
+      </div>`;
+  }
+  // ── Lista filtrada ────────────────────────────────
+  let l=all;
+  if(window._filterSt) l=all.filter(o=>o.status===window._filterSt);
+  const el=G('listOrc');
+  if(!l.length){
+    const msg=window._filterSt?'Nenhum orçamento neste status':'Nenhum orçamento';
+    el.innerHTML=`<div class="empty"><div class="ei">📋</div><h3>${msg}</h3><p>${window._filterSt?'Tente outro filtro':'Crie seu primeiro orçamento'}</p></div>`;
+    return;
+  }
+  const si={pendente:['bw','⏳ Pendente'],aprovado:['bg','✅ Aprovado'],executado:['bg','🔨 Executado'],recusado:['br','❌ Recusado']};
+  el.innerHTML=l.map(o=>{const[cls,lbl]=si[o.status]||si.pendente;const dt=o.criadoEm?new Date(o.criadoEm).toLocaleDateString('pt-BR'):'';return `<div class="oc" onclick="verOrc('${o.id}')"><div style="display:flex;justify-content:space-between;align-items:flex-start"><div><div class="onum">${o.numero||''}</div><div class="cnm" style="margin-top:2px">${o.clienteNome}</div><div class="csb">${dt}${o.prazo?' · '+o.prazo:''}</div></div><div style="text-align:right"><div class="oval">${fmtR(o.total)}</div><div style="margin-top:4px"><span class="bge ${cls}">${lbl}</span></div></div></div></div>`;}).join('');
+}
+
+function verOrc(id){const o=window._O.find(x=>x.id===id);if(!o)return;window._vid=id;const cli=window._C.find(c=>c.id===o.clienteId)||{};const emp=window._E;const dtE=o.criadoEm?new Date(o.criadoEm).toLocaleDateString('pt-BR'):'-';const dtV=o.validade?new Date(o.validade+'T12:00:00').toLocaleDateString('pt-BR'):'-';let itsHTML=o.items.map((it,i)=>`<tr><td>${String(i+1).padStart(2,'0')}</td><td>${it.desc}</td><td>${it.qtd}</td><td>${fmtR(it.preco)}</td><td>${fmtR(it.total)}</td></tr>`).join('');const eR=Math.max(0,3-o.items.length);for(let i=0;i<eR;i++)itsHTML+=`<tr class="er"><td>&nbsp;</td><td></td><td></td><td></td><td></td></tr>`;const mH=o.materiais&&o.materiais.length?o.materiais.map(m=>`<tr><td>${m.desc}</td><td>${m.qtd}</td></tr>`).join(''):'';G('vCont').innerHTML=`<div class="pv"><div class="pv-hdr" style="display:flex;align-items:center;gap:10px;padding:10px 16px 8px">${emp.logo?`<img src="${emp.logo}" style="max-width:80px;max-height:70px;object-fit:contain;flex-shrink:0"/>`:''}<div class="ph-emp" style="flex:1;text-align:center"><div class="en">${emp.nome||'Minha Empresa'}</div>${emp.doc?`<div class="es">CNPJ: ${emp.doc}</div>`:''}${emp.end?`<div class="es">${emp.end}</div>`:''}${emp.tel?`<div class="es">Tel: ${emp.tel}</div>`:''}${emp.email?`<div class="es">E-mail: ${emp.email}</div>`:''}</div></div><div class="pv-orc"><div class="po-cell"><span class="pk">Orçamento nº:&nbsp;</span><span class="pv2">${o.numero||''}</span></div><div class="po-cell"><span class="pk">Emitido em:&nbsp;</span><span style="font-weight:700">${dtE}</span></div><div class="po-cell"><span class="pk">Válido até:&nbsp;</span><span style="font-weight:700">${dtV}</span></div></div><div class="pv-sec"><div class="pv-lbl">CLIENTE</div><div class="pv-row1"><span class="rk">NOME</span><span class="rv">${cli.nome||o.clienteNome}</span></div><div class="pv-row2"><div class="rc"><div class="rk">TELEFONE</div><div class="rv">${cli.tel||'-'}</div></div><div class="rc"><div class="rk">EMAIL</div><div class="rv">${cli.email||'-'}</div></div></div><div class="pv-row1"><span class="rk">ENDEREÇO</span><span class="rv">${cli.end||'-'}</span></div></div><div class="pv-sec" style="padding:0"><div class="pv-lbl">ORÇAMENTO</div><table class="pv-tbl"><thead><tr><th>ITEM</th><th>PRODUTO/SERVIÇO</th><th>QTD</th><th>VALOR UNIT</th><th>TOTAL</th></tr></thead><tbody>${itsHTML}</tbody></table></div><div class="pv-tots"><div class="pv-tot"><div class="tk">SUBTOTAL</div><div class="tv">${fmtR(o.subtotal)}</div></div><div class="pv-tot"><div class="tk">DESCONTO</div><div class="tv">${fmtR(o.desconto)}</div></div><div class="pv-tot"><div class="tk">ACRÉSCIMO</div><div class="tv">${fmtR(o.acrescimo)}</div></div><div class="pv-tot"><div class="tk">TOTAL</div><div class="tv">${fmtR(o.total)}</div></div></div><div class="pv-fp"><div class="fc"><div class="fk">FORMA DE PAGAMENTO</div><div class="fv">${o.pagamento}</div>${o.chavePix?`<div class="fx">${o.chavePix}</div>`:''}</div><div class="fc"><div class="fk">PRAZO DE ENTREGA</div><div class="fv">${o.prazo||'-'}</div></div></div>${mH?`<div class="pv-sec" style="padding:0"><div class="pv-lbl">MATERIAIS NECESSÁRIOS</div><table class="pv-mat-tbl"><thead><tr><th>MATERIAL</th><th>QTD</th></tr></thead><tbody>${mH}</tbody></table></div>`:''}${o.obs?`<div class="pv-obs"><div class="ok">OBSERVAÇÕES</div><div class="ov2">${o.obs}</div></div>`:''}<div class="pv-ass"><div class="al">Criado em ${dtE}, por ${emp.resp||emp.nome||'___________'}<br><span class="aline"></span></div><div class="ar">Assinatura:<span class="aline" style="margin-left:4px"></span><br><div class="an">${cli.nome||o.clienteNome}</div></div></div></div>`;G('vSt').value=o.status||'pendente';G('mVer').classList.add('on');}
+async function chSt(){const o=window._O.find(x=>x.id===window._vid);if(!o)return;o.status=G('vSt').value;await dbPut('orcamentos',o);rendOrc();toast('Status atualizado!');}
+function edOrc(){const o=window._O.find(x=>x.id===window._vid);if(!o)return;cm('mVer');window._eOid=o.id;window._I=[...o.items];window._M=[...(o.materiais||[])];G('mOrcT').textContent='Editar Orçamento';G('oCli').value=o.clienteId;G('oDesc').value=o.desconto;G('oAcr').value=o.acrescimo||0;G('oPg').value=o.pagamento;G('oPix').value=o.chavePix||'';G('oPrz').value=o.prazo||'';G('oVal').value=o.validade||'';G('oObs').value=o.obs||'';rndI();rndM();calcT();G('mOrc').classList.add('on');}
+async function dlOrc(){if(!confirm('Excluir este orçamento?'))return;const id=window._vid;window._O=window._O.filter(o=>o.id!==id);await dbDel('orcamentos',id);cm('mVer');rendOrc();toast('🗑️ Excluído');}
+
+// Backup
+async function exportBackup(){const dados={versao:'2.0',data:new Date().toISOString(),empresa:window._E,clientes:window._C,orcamentos:window._O};const json=JSON.stringify(dados,null,2);const fname='orcafacil_backup_'+new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')+'.json';if(isNative){try{const Filesystem=Capacitor.Plugins.Filesystem;const r=await Filesystem.writeFile({path:fname,data:btoa(unescape(encodeURIComponent(json))),directory:'DOCUMENTS',recursive:true});toast('✅ Backup salvo em Documentos!');try{await Capacitor.Plugins.Share.share({title:'Backup OrçaFácil',url:r.uri,dialogTitle:'Compartilhar backup'});}catch(e){}}catch(e){toast('❌ Erro ao exportar');}}else{const blob=new Blob([json],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=fname;a.click();URL.revokeObjectURL(url);toast('✅ Backup exportado!');}}
+async function importBackup(e){const file=e.target.files[0];if(!file)return;if(!confirm('Isso vai substituir TODOS os dados atuais. Continuar?'))return;const reader=new FileReader();reader.onload=async ev=>{try{const dados=JSON.parse(ev.target.result);if(!dados.orcamentos||!dados.clientes)throw new Error('Arquivo inválido');for(const c of dados.clientes)await dbPut('clientes',c);for(const o of dados.orcamentos)await dbPut('orcamentos',o);if(dados.empresa){const emp={chave:'empresa',...dados.empresa};await dbPut('config',emp);window._E=emp;ldEmp();}window._C=dados.clientes;window._O=dados.orcamentos;rendOrc();rendCli();popSC();toast('✅ Backup restaurado com sucesso!');}catch(err){toast('❌ Erro ao importar: arquivo inválido');}};reader.readAsText(file);e.target.value='';}
+
+// PDF
+
+// PDF
+function buildOrcPDF(){
+  const o = window._O.find(x=>x.id===window._vid);
+  if(!o) return null;
+  const cli = window._C.find(c=>c.id===o.clienteId) || {};
+  const emp = window._E || {};
+
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF({orientation:'p',unit:'pt',format:'a4'});
+
+  // Dimensões reais da página (evita “andar” para a direita em alguns viewers)
+  const PW = pdf.internal.pageSize.getWidth();
+  const PH = pdf.internal.pageSize.getHeight();
+
+  const ML = 34, MR = 34;
+  const CT = PW - ML - MR;
+  let y = 28;
+
+  const dtE = o.criadoEm ? new Date(o.criadoEm).toLocaleDateString('pt-BR') : '-';
+  const dtV = o.validade ? new Date(o.validade+'T12:00:00').toLocaleDateString('pt-BR') : '-';
+
+  const eL = [
+    emp.doc ? 'CNPJ: '+emp.doc : null,
+    emp.end ? emp.end : null,
+    emp.cep ? 'CEP: '+emp.cep : null,
+    emp.tel ? 'Tel: '+emp.tel : null,
+    emp.email ? 'E-mail: '+emp.email : null,
+    emp.site ? 'Website: '+emp.site : null
+  ].filter(Boolean);
+
+  const hH = Math.max(70, 12 + eL.length*9 + 30);
+
+  // Header
+  pdf.setFillColor(255,255,255);
+  pdf.rect(ML,y,CT,hH,'F');
+  pdf.setDrawColor(180,180,180);
+  pdf.setLineWidth(0.5);
+  pdf.rect(ML,y,CT,hH,'S');
+
+  let lW = 0;
+  if(emp.logo){
+    try{ pdf.addImage(emp.logo,'PNG',ML+6,y+8,70,hH-16); lW = 82; }catch(e){}
+  }
+
+  const tCx = ML + lW + (CT - lW)/2;
+  let ey = y + (hH - (11 + eL.length*9))/2 + 8;
+
+  pdf.setFont('helvetica','bold');
+  pdf.setFontSize(11);
+  pdf.setTextColor(0,0,0);
+  pdf.text(emp.nome || 'Minha Empresa', tCx, ey, {align:'center', maxWidth: CT - lW - 12});
+  ey += 11;
+
+  pdf.setFont('helvetica','normal');
+  pdf.setFontSize(7.5);
+  eL.forEach(line=>{
+    if(emp.site && line.startsWith('Website:')) pdf.setTextColor(0,80,185);
+    else pdf.setTextColor(50,50,50);
+    pdf.text(line, tCx, ey, {align:'center', maxWidth: CT - lW - 12});
+    ey += 9;
+  });
+
+  y += hH + 6;
+
+  // Linha do orçamento
+  pdf.setFillColor(255,255,255);
+  pdf.rect(ML,y,CT,22,'F');
+  pdf.setDrawColor(180,180,180);
+  pdf.rect(ML,y,CT,22,'S');
+  const c1 = ML + CT/3, c2 = ML + 2*CT/3;
+  pdf.line(c1,y,c1,y+22);
+  pdf.line(c2,y,c2,y+22);
+
+  pdf.setFontSize(8);
+  pdf.setTextColor(0,0,0);
+  pdf.setFont('helvetica','normal');
+  pdf.text('Orçamento nº:', ML+6, y+13);
+  pdf.setFont('helvetica','bold');
+  pdf.setTextColor(200,0,0);
+  pdf.text(o.numero || '', ML+6+pdf.getTextWidth('Orçamento nº:')+3, y+13, {maxWidth: CT/3 - 16});
+
+  pdf.setFont('helvetica','normal');
+  pdf.setTextColor(0,0,0);
+  pdf.text('Emitido em:', c1+6, y+13);
+  pdf.setFont('helvetica','bold');
+  pdf.text(dtE, c1+6+pdf.getTextWidth('Emitido em:')+3, y+13, {maxWidth: CT/3 - 16});
+
+  pdf.setFont('helvetica','normal');
+  pdf.text('Válido até:', c2+6, y+13);
+  pdf.setFont('helvetica','bold');
+  pdf.text(dtV, c2+6+pdf.getTextWidth('Válido até:')+3, y+13, {maxWidth: CT/3 - 16});
+
+  y += 28;
+
+  // Seção cliente
+  pdf.setFillColor(220,220,220);
+  pdf.rect(ML,y,CT,17,'F');
+  pdf.setDrawColor(180,180,180);
+  pdf.rect(ML,y,CT,17,'S');
+  pdf.setFont('helvetica','bold');
+  pdf.setFontSize(8);
+  pdf.setTextColor(0,0,0);
+  pdf.text('CLIENTE', PW/2, y+11, {align:'center'});
+  y += 17;
+
+  function row1(l,v,yy){
+    pdf.setFillColor(255,255,255);
+    pdf.rect(ML,yy,CT,17,'F');
+    pdf.setDrawColor(200,200,200);
+    pdf.rect(ML,yy,CT,17,'S');
+    pdf.setFont('helvetica','bold');
+    pdf.setFontSize(7);
+    pdf.setTextColor(0,0,0);
+    pdf.text(l, ML+4, yy+10);
+    const x = ML+4+pdf.getTextWidth(l)+4;
+    pdf.setFont('helvetica','normal');
+    pdf.setFontSize(8);
+    pdf.text(v||'', x, yy+10, {maxWidth: CT - (x-ML) - 4});
+  }
+
+  function row2(l1,v1,l2,v2,yy){
+    const hw = CT/2;
+    pdf.setFillColor(255,255,255);
+    pdf.rect(ML,yy,hw,17,'F');
+    pdf.rect(ML+hw,yy,hw,17,'F');
+    pdf.setDrawColor(200,200,200);
+    pdf.rect(ML,yy,hw,17,'S');
+    pdf.rect(ML+hw,yy,hw,17,'S');
+
+    pdf.setFont('helvetica','bold');
+    pdf.setFontSize(7);
+    pdf.setTextColor(0,0,0);
+    pdf.text(l1, ML+4, yy+10);
+    let x1 = ML+4+pdf.getTextWidth(l1)+4;
+    pdf.setFont('helvetica','normal');
+    pdf.setFontSize(8);
+    pdf.text(v1||'', x1, yy+10, {maxWidth: hw - (x1-ML) - 4});
+
+    pdf.setFont('helvetica','bold');
+    pdf.setFontSize(7);
+    pdf.text(l2, ML+hw+4, yy+10);
+    let x2 = ML+hw+4+pdf.getTextWidth(l2)+4;
+    pdf.setFont('helvetica','normal');
+    pdf.setFontSize(8);
+    pdf.text(v2||'', x2, yy+10, {maxWidth: hw - (x2-(ML+hw)) - 4});
+  }
+
+  row1('NOME', cli.nome || o.clienteNome, y); y += 17;
+  row2('TELEFONE', cli.tel || '', 'EMAIL', cli.email || '', y); y += 17;
+  row2('CPF/CNPJ', cli.doc || '', 'RG/IE', cli.rg || '', y); y += 17;
+  row1('ENDEREÇO', cli.end || '', y); y += 17;
+
+  const qw = CT/4;
+  const labels = ['BAIRRO','CIDADE','ESTADO','CEP'];
+  const vals = [cli.bairro||'', cli.cidade||'', cli.uf||'', cli.cep||''];
+  labels.forEach((lbl,i)=>{
+    pdf.setFillColor(255,255,255);
+    pdf.rect(ML+i*qw, y, qw, 17, 'F');
+    pdf.setDrawColor(200,200,200);
+    pdf.rect(ML+i*qw, y, qw, 17, 'S');
+    pdf.setFont('helvetica','bold');
+    pdf.setFontSize(7);
+    pdf.setTextColor(0,0,0);
+    pdf.text(lbl, ML+i*qw+4, y+10);
+    pdf.setFont('helvetica','normal');
+    pdf.setFontSize(8);
+    const x = ML+i*qw+4+pdf.getTextWidth(lbl)+4;
+    pdf.text(vals[i], x, y+10, {maxWidth: qw - (x-(ML+i*qw)) - 4});
+  });
+  y += 23;
+
+  // Seção orçamento
+  pdf.setFillColor(220,220,220);
+  pdf.rect(ML,y,CT,17,'F');
+  pdf.setDrawColor(180,180,180);
+  pdf.rect(ML,y,CT,17,'S');
+  pdf.setFont('helvetica','bold');
+  pdf.setFontSize(8);
+  pdf.setTextColor(0,0,0);
+  pdf.text('ORÇAMENTO', PW/2, y+11, {align:'center'});
+  y += 17;
+
+  const cols = [28,295,45,79,79];
+  const cX = [ML, ML+28, ML+323, ML+368, ML+447];
+  const chd = ['ITEM','PRODUTO/SERVIÇO','QTD','VALOR UNIT','TOTAL'];
+  const chA = ['center','left','center','center','center'];
+
+  pdf.setFillColor(220,220,220);
+  cols.forEach((w,i)=>{ pdf.rect(cX[i],y,w,17,'F'); pdf.setDrawColor(180,180,180); pdf.rect(cX[i],y,w,17,'S'); });
+  chd.forEach((h,i)=>{
+    pdf.setFont('helvetica','bold');
+    pdf.setFontSize(7);
+    pdf.setTextColor(0,0,0);
+    const cx = (chA[i]==='center') ? cX[i] + cols[i]/2 : cX[i] + 4;
+    pdf.text(h, cx, y+11, {align: chA[i]==='center' ? 'center' : 'left', maxWidth: cols[i]-8});
+  });
+  y += 17;
+
+  const aI = [...o.items];
+  while(aI.length < 3) aI.push({desc:'',qtd:'',preco:'',total:''});
+
+  aI.forEach((it,i)=>{
+    const bg = (i%2===0) ? [255,255,255] : [249,249,249];
+    cols.forEach((w,j)=>{ pdf.setFillColor(...bg); pdf.rect(cX[j],y,w,17,'F'); pdf.setDrawColor(200,200,200); pdf.rect(cX[j],y,w,17,'S'); });
+
+    if(it.desc){
+      pdf.setFont('helvetica','normal');
+      pdf.setFontSize(7.5);
+      pdf.setTextColor(0,0,0);
+
+      pdf.text(String(i+1).padStart(2,'0'), cX[0]+cols[0]/2, y+11, {align:'center'});
+      // Evita estourar para a direita (causa típico do “desalinhado”)
+      pdf.text(String(it.desc), cX[1]+4, y+11, {maxWidth: cols[1]-8});
+      pdf.text(String(it.qtd), cX[2]+cols[2]/2, y+11, {align:'center', maxWidth: cols[2]-8});
+      pdf.text(fmtR(it.preco), cX[3]+cols[3]-4, y+11, {align:'right', maxWidth: cols[3]-8});
+      pdf.text(fmtR(it.total), cX[4]+cols[4]-4, y+11, {align:'right', maxWidth: cols[4]-8});
+    }
+
+    y += 17;
+  });
+
+  y += 6;
+
+  const tw = CT/4;
+  [['SUBTOTAL',fmtR(o.subtotal)],['DESCONTO',fmtR(o.desconto)],['ACRÉSCIMO',fmtR(o.acrescimo)],['TOTAL',fmtR(o.total)]].forEach(([lbl,val],i)=>{
+    const bg = (i===3) ? [215,215,215] : [240,240,240];
+    pdf.setFillColor(...bg);
+    pdf.rect(ML+i*tw, y, tw, 40, 'F');
+    pdf.setDrawColor(180,180,180);
+    pdf.rect(ML+i*tw, y, tw, 40, 'S');
+    pdf.setFont('helvetica','bold');
+    pdf.setFontSize(7.5);
+    pdf.setTextColor(80,80,80);
+    pdf.text(lbl, ML+i*tw+tw/2, y+14, {align:'center'});
+    pdf.setFontSize(i===3 ? 10 : 9);
+    pdf.setTextColor(0,0,0);
+    pdf.text(val, ML+i*tw+tw/2, y+30, {align:'center', maxWidth: tw-8});
+  });
+  y += 46;
+
+  const hw2 = CT/2;
+  pdf.setFillColor(240,240,240);
+  pdf.rect(ML,y,hw2,40,'F');
+  pdf.rect(ML+hw2,y,hw2,40,'F');
+  pdf.setDrawColor(180,180,180);
+  pdf.rect(ML,y,hw2,40,'S');
+  pdf.rect(ML+hw2,y,hw2,40,'S');
+
+  pdf.setFont('helvetica','bold');
+  pdf.setFontSize(7);
+  pdf.setTextColor(80,80,80);
+  pdf.text('FORMA DE PAGAMENTO', ML+6, y+11);
+  pdf.setFont('helvetica','normal');
+  pdf.setFontSize(8);
+  pdf.setTextColor(0,0,0);
+  pdf.text(o.pagamento || '-', ML+6, y+23, {maxWidth: hw2-12});
+  if(o.chavePix){
+    pdf.setFontSize(7);
+    pdf.setTextColor(80,80,80);
+    pdf.text(String(o.chavePix), ML+6, y+33, {maxWidth: hw2-12});
+  }
+
+  pdf.setFont('helvetica','bold');
+  pdf.setFontSize(7);
+  pdf.setTextColor(80,80,80);
+  pdf.text('PRAZO DE ENTREGA', ML+hw2+6, y+11);
+  pdf.setFont('helvetica','normal');
+  pdf.setFontSize(8);
+  pdf.setTextColor(0,0,0);
+  pdf.text(o.prazo || '-', ML+hw2+6, y+23, {maxWidth: hw2-12});
+
+  y += 46;
+
+  if(o.materiais && o.materiais.length){
+    pdf.setFillColor(220,220,220);
+    pdf.rect(ML,y,CT,17,'F');
+    pdf.setDrawColor(180,180,180);
+    pdf.rect(ML,y,CT,17,'S');
+    pdf.setFont('helvetica','bold');
+    pdf.setFontSize(8);
+    pdf.setTextColor(0,0,0);
+    pdf.text('MATERIAIS NECESSÁRIOS', PW/2, y+11, {align:'center'});
+    y += 17;
+
+    const mw = CT - 80;
+    pdf.setFillColor(230,230,230);
+    pdf.rect(ML,y,mw,16,'F');
+    pdf.rect(ML+mw,y,80,16,'F');
+    pdf.setDrawColor(180,180,180);
+    pdf.rect(ML,y,mw,16,'S');
+    pdf.rect(ML+mw,y,80,16,'S');
+    pdf.setFont('helvetica','bold');
+    pdf.setFontSize(7);
+    pdf.setTextColor(0,0,0);
+    pdf.text('MATERIAL', ML+4, y+10);
+    pdf.text('QTD', ML+mw+40, y+10, {align:'center'});
+    y += 16;
+
+    o.materiais.forEach((m,i)=>{
+      const bg = (i%2===0) ? [255,255,255] : [248,248,248];
+      pdf.setFillColor(...bg);
+      pdf.rect(ML,y,mw,16,'F');
+      pdf.rect(ML+mw,y,80,16,'F');
+      pdf.setDrawColor(200,200,200);
+      pdf.rect(ML,y,mw,16,'S');
+      pdf.rect(ML+mw,y,80,16,'S');
+      pdf.setFont('helvetica','normal');
+      pdf.setFontSize(7.5);
+      pdf.setTextColor(0,0,0);
+      pdf.text(String(m.desc||''), ML+4, y+10, {maxWidth: mw-8});
+      pdf.text(String(m.qtd||''), ML+mw+40, y+10, {align:'center'});
+      y += 16;
+    });
+
+    y += 6;
+  }
+
+  if(o.obs){
+    pdf.setFillColor(220,220,220);
+    pdf.rect(ML,y,CT,17,'F');
+    pdf.setDrawColor(180,180,180);
+    pdf.rect(ML,y,CT,17,'S');
+    pdf.setFont('helvetica','bold');
+    pdf.setFontSize(8);
+    pdf.setTextColor(0,0,0);
+    pdf.text('OBSERVAÇÕES', PW/2, y+11, {align:'center'});
+    y += 17;
+
+    pdf.setFillColor(255,255,255);
+    pdf.rect(ML,y,CT,24,'F');
+    pdf.setDrawColor(200,200,200);
+    pdf.rect(ML,y,CT,24,'S');
+    pdf.setFont('helvetica','normal');
+    pdf.setFontSize(7.5);
+    pdf.setTextColor(0,0,0);
+    pdf.text(pdf.splitTextToSize(String(o.obs), CT-12), ML+6, y+10);
+    y += 28;
+  }
+
+  // Assinaturas (ancora sempre perto do rodapé)
+  y = Math.max(y, PH - 90);
+  pdf.setFontSize(7.5);
+  pdf.setFont('helvetica','normal');
+  pdf.setTextColor(80,80,80);
+  pdf.text(`Criado em ${dtE}, por ${emp.resp || emp.nome || '___________'}`, ML, y, {maxWidth: (CT/2)-10});
+  pdf.text('Assinatura:', PW/2+10, y);
+  pdf.setDrawColor(0,0,0);
+  pdf.setLineWidth(0.8);
+  pdf.line(PW/2+10+pdf.getTextWidth('Assinatura:')+4, y, PW-MR, y);
+  y += 12;
+  pdf.setFont('helvetica','bold');
+  pdf.setFontSize(8);
+  pdf.setTextColor(0,0,0);
+  pdf.text(cli.nome || o.clienteNome, PW/2+30, y, {align:'center', maxWidth: (CT/2)-20});
+
+  // Rodapé fixo (para PDF/print)
+  pdf.setFont('helvetica','normal');
+  pdf.setFontSize(7);
+  pdf.setTextColor(120,120,120);
+  pdf.text('Desenvolvido por Josimar Ferreira Soares © 2026', PW/2, PH-18, {align:'center'});
+
+  const fname = `${(o.numero||'ORC').replace(/\s+/g,'_')}_${(o.clienteNome||'cliente').replace(/\s+/g,'_')}.pdf`;
+  return { pdf, fname };
+}
+
+async function downloadOrcPDF(){
+  const built = buildOrcPDF();
+  if(!built) return;
+  if(isNative){
+    try{
+      const b64=built.pdf.output('datauristring').split(',')[1];
+      const Filesystem=Capacitor.Plugins.Filesystem;
+      const r=await Filesystem.writeFile({path:built.fname,data:b64,directory:'DOCUMENTS',recursive:true});
+      toast('📄 PDF salvo em Documentos!');
+      try{await Capacitor.Plugins.Share.share({title:'Orçamento',url:r.uri,dialogTitle:'Abrir PDF'});}catch(e){}
+    }catch(e){built.pdf.save(built.fname);toast('📄 PDF gerado!');}
+  } else {
+    built.pdf.save(built.fname);
+    toast('📄 PDF gerado!');
+  }
+}
+
+async function shareOrcPDF(){
+  const built = buildOrcPDF();
+  if(!built) return;
+  try{
+    if(isNative){
+      const b64=built.pdf.output('datauristring').split(',')[1];
+      const Filesystem=Capacitor.Plugins.Filesystem;
+      const r=await Filesystem.writeFile({path:'cache/'+built.fname,data:b64,directory:'CACHE',recursive:true});
+      await Capacitor.Plugins.Share.share({title:`Orçamento ${built.fname}`,url:r.uri,dialogTitle:'Compartilhar PDF'});
+      toast('📤 Compartilhado!');
+    } else {
+      const blob = built.pdf.output('blob');
+      const file = new File([blob], built.fname, {type:'application/pdf'});
+      if(navigator.canShare && navigator.canShare({files:[file]})){
+        await navigator.share({title:`Orçamento ${built.fname}`,text:'Segue o PDF do orçamento.',files:[file]});
+        toast('📤 Compartilhamento aberto!');
+      } else {
+        built.pdf.save(built.fname);
+        toast('📄 PDF baixado!');
+      }
+    }
+  }catch(err){
+    built.pdf.save(built.fname);
+    toast('📄 PDF baixado!');
+  }
+}
+
+// Mantém compatibilidade com o botão antigo
+async function gPDF(){
+  return downloadOrcPDF();
+}
+
+
+
+// ══════════════════════════════════════════════════════════════
+//  MONETIZAÇÃO — PDF com quota diária + rewarded ad + IAP
+// ══════════════════════════════════════════════════════════════
+const MON_KEY='orcafacil_mon';
+function monGet(){try{return JSON.parse(localStorage.getItem(MON_KEY))||{};}catch(e){return{};}}
+function monSave(s){localStorage.setItem(MON_KEY,JSON.stringify(s));}
+function monToday(){return 'day_'+new Date().toISOString().split('T')[0];}
+function monIsPremium(){return monGet().premium===true;}
+function monCanExport(){
+  if(monIsPremium())return true;
+  const s=monGet(),t=monToday();
+  return (s[t]||0)<1; // 1 gratuito por dia
+}
+function monUseExport(){
+  if(monIsPremium())return;
+  const s=monGet(),t=monToday();
+  s[t]=(s[t]||0)+1;monSave(s);
+}
+async function shareOrcPDFPaywall(){
+  if(monCanExport()){monUseExport();await shareOrcPDF();}
+  else{G('mPaywall').classList.add('on');}
+}
+async function monWatchAd(){
+  cm('mPaywall');
+  toast('📺 Carregando anúncio...');
+  // TODO: Integrar AdMob Rewarded Ad
+  // Capacitor.Plugins.AdMob.showRewardVideoAd(...)
+  setTimeout(async()=>{
+    const s=monGet(),t=monToday();
+    s[t]=0; // reseta após ver anúncio
+    monSave(s);
+    toast('✅ Obrigado! Gerando PDF...');
+    await shareOrcPDF();
+  },2000);
+}
+async function monBuyPremium(){
+  cm('mPaywall');
+  toast('💳 Abrindo loja...');
+  // TODO: Integrar Google Play Billing
+  // const { GooglePlayBilling } = Capacitor.Plugins;
+  // await GooglePlayBilling.purchase({ productId: 'orcafacil_premium' });
+  setTimeout(()=>{
+    if(confirm('Comprar acesso Premium — sem anúncios — por R$9,99?\n(Integração real via Google Play Billing)')){
+      const s=monGet();s.premium=true;monSave(s);
+      toast('🎉 Premium ativado! PDFs ilimitados!');
+    }
+  },400);
+}
+
+// INIT
+async function init(){
+  await abrirDB();
+  const[orcs,clis,emp]=await Promise.all([dbGetAll('orcamentos'),dbGetAll('clientes'),dbGet('config','empresa')]);
+  window._O=orcs.sort((a,b)=>new Date(b.criadoEm)-new Date(a.criadoEm));
+  window._C=clis.sort((a,b)=>a.nome.localeCompare(b.nome));
+  window._E=emp||{};
+  ldEmp();rendOrc();rendCli();popSC();apMasks();
+  const mode=isNative?'Nativo ✓':'Web ✓';
+  G('fbs').innerHTML=`<div class="dot dg"></div><span>SQLite ${mode}</span>`;
+  if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+  // ── Backup automático ──────────────────────────────────────────
+  renderDrivePanel();               // Renderiza painel de backup na aba Empresa
+  hookAutoSave();                   // Hooks: backup após cada save/delete
+  await bkVerificarRecuperar(window._O.length, window._C.length); // Auto-recovery
+  await bkCarregarHandle();         // Tenta restaurar FileHandle do IndexedDB
+  updBkUI();                        // Atualiza UI do painel
+}
+init();
+</script>
+
+</body>
+</html>
