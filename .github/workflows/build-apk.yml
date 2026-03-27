@@ -1,0 +1,141 @@
+name: Build OrçaFácil
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: ⬇️ Checkout
+        uses: actions/checkout@v4
+
+      - name: ☕ Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: 🟢 Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: 🐍 Setup Python (ícones)
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 🖼️ Instalar Pillow
+        run: pip install Pillow
+
+      - name: 🖼️ Gerar todos os ícones nos tamanhos corretos
+        run: |
+          python3 << 'PYEOF'
+          from PIL import Image
+          import os
+
+          src_path = 'src/icons/icon-128x128.png'
+          src = Image.open(src_path).convert('RGBA')
+          icons_dir = 'src/icons'
+
+          sizes = {
+              'favicon-16x16.png':    16,
+              'favicon-32x32.png':    32,
+              'icon-72x72.png':       72,
+              'icon-96x96.png':       96,
+              'icon-128x128.png':     128,
+              'icon-144x144.png':     144,
+              'icon-152x152.png':     152,
+              'icon-192x192.png':     192,
+              'icon-384x384.png':     384,
+              'icon-512x512.png':     512,
+              'apple-touch-icon.png': 180,
+          }
+          for fname, size in sizes.items():
+              resized = src.resize((size, size), Image.LANCZOS)
+              out = Image.new('RGBA', (size, size), (0,0,0,0))
+              out.paste(resized, (0,0))
+              out.save(os.path.join(icons_dir, fname), 'PNG', optimize=True)
+              print(f'✅ {fname} {size}x{size}')
+          PYEOF
+
+      - name: 📦 Instalar dependências
+        run: npm ci
+
+      - name: 📱 Adicionar plataforma Android
+        run: npx cap add android || true
+
+      - name: 🔄 Sincronizar Capacitor (copia ícones para res/)
+        run: npx cap sync android
+
+      - name: 🔧 Permissão Gradle
+        working-directory: android
+        run: chmod +x gradlew
+
+      # ── APK Debug ──────────────────────────────────────────────────
+      - name: 🐛 Build APK Debug
+        working-directory: android
+        run: ./gradlew assembleDebug --no-daemon
+
+      - name: 📤 Upload APK Debug
+        uses: actions/upload-artifact@v4
+        with:
+          name: OrcaFacil-debug-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 30
+
+      # ── AAB + APK Release assinados ────────────────────────────────
+      - name: 🔑 Decodificar keystore
+        if: ${{ secrets.KEYSTORE_BASE64 != '' }}
+        run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/orcafacil-key.jks
+
+      - name: 📦 Build AAB Release (assinado)
+        if: ${{ secrets.KEYSTORE_BASE64 != '' }}
+        working-directory: android
+        env:
+          SIGNING_KEY_ALIAS:      ${{ secrets.KEY_ALIAS }}
+          SIGNING_KEY_PASSWORD:   ${{ secrets.KEY_PASSWORD }}
+          SIGNING_STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
+        run: |
+          ./gradlew bundleRelease \
+            -Pandroid.injected.signing.store.file=orcafacil-key.jks \
+            -Pandroid.injected.signing.store.password=$SIGNING_STORE_PASSWORD \
+            -Pandroid.injected.signing.key.alias=$SIGNING_KEY_ALIAS \
+            -Pandroid.injected.signing.key.password=$SIGNING_KEY_PASSWORD \
+            --no-daemon
+
+      - name: 📤 Upload AAB Release
+        if: ${{ secrets.KEYSTORE_BASE64 != '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: OrcaFacil-release-aab
+          path: android/app/build/outputs/bundle/release/app-release.aab
+          retention-days: 90
+
+      - name: 📦 Build APK Release (assinado)
+        if: ${{ secrets.KEYSTORE_BASE64 != '' }}
+        working-directory: android
+        env:
+          SIGNING_KEY_ALIAS:      ${{ secrets.KEY_ALIAS }}
+          SIGNING_KEY_PASSWORD:   ${{ secrets.KEY_PASSWORD }}
+          SIGNING_STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
+        run: |
+          ./gradlew assembleRelease \
+            -Pandroid.injected.signing.store.file=orcafacil-key.jks \
+            -Pandroid.injected.signing.store.password=$SIGNING_STORE_PASSWORD \
+            -Pandroid.injected.signing.key.alias=$SIGNING_KEY_ALIAS \
+            -Pandroid.injected.signing.key.password=$SIGNING_KEY_PASSWORD \
+            --no-daemon
+
+      - name: 📤 Upload APK Release
+        if: ${{ secrets.KEYSTORE_BASE64 != '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: OrcaFacil-release-apk
+          path: android/app/build/outputs/apk/release/app-release.apk
+          retention-days: 90
